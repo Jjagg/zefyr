@@ -20,13 +20,13 @@ int getPositionDelta(Delta user, Delta actual) {
     final userOp = userIter.next(length);
     final actualOp = actualIter.next(length);
     assert(userOp.length == actualOp.length);
-    if (userOp.key == actualOp.key) continue;
+    if (userOp.type == actualOp.type) continue;
     if (userOp.isInsert && actualOp.isRetain) {
       diff -= userOp.length;
     } else if (userOp.isDelete && actualOp.isRetain) {
       diff += userOp.length;
     } else if (userOp.isRetain && actualOp.isInsert) {
-      if (actualOp.data.startsWith('\n')) {
+      if (actualOp.startsWith('\n')) {
         // At this point user input reached its end (retain). If a heuristic
         // rule inserts a new line we should keep cursor on it's original position.
         continue;
