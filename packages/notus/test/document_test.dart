@@ -71,7 +71,7 @@ void main() {
       final delta = Delta()..insert('DartConf\nLos Angeles');
       expect(() {
         NotusDocument.fromDelta(delta);
-      }, throwsA(const TypeMatcher<AssertionError>()));
+      }, throwsArgumentError);
     });
 
     test('lookupLine', () {

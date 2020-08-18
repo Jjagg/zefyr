@@ -82,23 +82,25 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
 
     while (iterator.hasNext) {
       final op = iterator.next();
-      final lf = op.data.indexOf('\n');
+      final lf = op.indexOf('\n');
       if (lf == -1) {
-        _handleSpan(op.data, op.attributes);
+        _handleSpan(op.getTextOrElse(''), op.attributes);
       } else {
         var span = StringBuffer();
-        for (var i = 0; i < op.data.length; i++) {
-          if (op.data.codeUnitAt(i) == 0x0A) {
-            if (span.isNotEmpty) {
-              // Write the span if it's not empty.
-              _handleSpan(span.toString(), op.attributes);
+        if (op is InsertStringOp) {
+          for (var i = 0; i < op.text.length; i++) {
+            if (op.text.codeUnitAt(i) == 0x0A) {
+              if (span.isNotEmpty) {
+                // Write the span if it's not empty.
+                _handleSpan(span.toString(), op.attributes);
+              }
+              // Close any open inline styles.
+              _handleSpan('', null);
+              _handleLine(op.attributes);
+              span.clear();
+            } else {
+              span.writeCharCode(op.text.codeUnitAt(i));
             }
-            // Close any open inline styles.
-            _handleSpan('', null);
-            _handleLine(op.attributes);
-            span.clear();
-          } else {
-            span.writeCharCode(op.data.codeUnitAt(i));
           }
         }
         // Remaining span

@@ -164,7 +164,7 @@ class LineNode extends ContainerNode<LeafNode>
   Delta toDelta() {
     final delta = children
         .map((text) => text.toDelta())
-        .fold(Delta(), (a, b) => a.concat(b));
+        .fold(Delta(), (a, b) => Delta.concat(a, b));
     var attributes = style;
     if (parent is BlockNode) {
       BlockNode block = parent;

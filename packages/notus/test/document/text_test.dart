@@ -37,7 +37,7 @@ void main() {
     test('new text with contents', () {
       expect(node.value, isNotEmpty);
       expect(node.length, 16);
-      expect(node.toDelta().toList(), [Operation.insert('London "Grammar"')]);
+      expect(node.toDelta().operations, [InsertOp.string('London "Grammar"')]);
     });
 
     test('insert at the end', () {

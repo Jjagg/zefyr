@@ -306,5 +306,5 @@ class RootNode extends ContainerNode<ContainerNode<Node>> {
   @override
   Delta toDelta() => children
       .map((child) => child.toDelta())
-      .fold(Delta(), (a, b) => a.concat(b));
+      .fold(Delta(), (a, b) => Delta.concat(a, b));
 }

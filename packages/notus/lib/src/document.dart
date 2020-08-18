@@ -77,11 +77,10 @@ class NotusDocument {
   Delta _delta;
 
   /// Returns plain text representation of this document.
-  String toPlainText() => _delta.toList().map((op) => op.data).join();
+  String toPlainText() =>
+      _delta.operations.whereType<InsertStringOp>().map((op) => op.text).join();
 
-  dynamic toJson() {
-    return _delta.toJson();
-  }
+  dynamic toJson() => _delta.toJson();
 
   /// Returns `true` if this document and associated stream of [changes]
   /// is closed.
@@ -223,11 +222,12 @@ class NotusDocument {
 
     var offset = 0;
     final before = toDelta();
-    for (final op in change.toList()) {
+    for (final op in change.operations) {
       final attributes =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
-      if (op.isInsert) {
-        _root.insert(offset, op.data, attributes);
+      // TODO handle object insert
+      if (op is InsertStringOp) {
+        _root.insert(offset, op.text, attributes);
       } else if (op.isDelete) {
         _root.delete(offset, op.length);
       } else if (op.attributes != null) {
@@ -269,17 +269,23 @@ class NotusDocument {
 
   /// Loads [document] delta into this document.
   void _loadDocument(Delta doc) {
-    assert(doc.last.data.endsWith('\n'),
-        'Invalid document delta. Document delta must always end with a line-break.');
+    if (doc.isEmpty) return;
+
+    if (!doc.last.mapTextOrElse((t) => t.endsWith('\n'), false)) {
+      throw ArgumentError.value(doc, 'doc',
+          'Invalid document delta. Document delta must always end with a line-break.');
+    }
     var offset = 0;
-    for (final op in doc.toList()) {
+    for (final op in doc.operations) {
       final style =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
-      if (op.isInsert) {
-        _root.insert(offset, op.data, style);
+      if (op is InsertStringOp) {
+        _root.insert(offset, op.text, style);
+      } else if (op is InsertObjectOp) {
+        throw UnimplementedError('Have yet to implement insert object.');
       } else {
         throw ArgumentError.value(doc,
-            'Document Delta can only contain insert operations but ${op.key} found.');
+            'Document Delta can only contain insert operations but ${op.type} found.');
       }
       offset += op.length;
     }

@@ -33,9 +33,10 @@ class ResolveLineFormatRule extends FormatRule {
     var current = 0;
     while (current < length && iter.hasNext) {
       final op = iter.next(length - current);
-      if (op.data.contains('\n')) {
-        final delta = _applyAttribute(op.data, attribute);
-        result = result.concat(delta);
+      final text = op.match(insert: (op) => op.text);
+      if (text != null) {
+        final delta = _applyAttribute(text, attribute);
+        result.concat(delta);
       } else {
         result.retain(op.length);
       }
@@ -44,7 +45,7 @@ class ResolveLineFormatRule extends FormatRule {
     // And include extra line-break after retain
     while (iter.hasNext) {
       final op = iter.next();
-      final lf = op.data.indexOf('\n');
+      final lf = op.indexOf('\n');
       if (lf == -1) {
         result..retain(op.length);
         continue;
@@ -88,13 +89,13 @@ class ResolveInlineFormatRule extends FormatRule {
     var current = 0;
     while (current < length && iter.hasNext) {
       final op = iter.next(length - current);
-      var lf = op.data.indexOf('\n');
+      var lf = op.indexOf('\n');
       if (lf != -1) {
         var pos = 0;
         while (lf != -1) {
           result..retain(lf - pos, attribute.toJson())..retain(1);
           pos = lf + 1;
-          lf = op.data.indexOf('\n', pos);
+          lf = op.indexOf('\n', pos);
         }
         if (pos < op.length) result.retain(op.length - pos, attribute.toJson());
       } else {
@@ -178,8 +179,8 @@ class FormatEmbedsRule extends FormatRule {
     final target = iter.next();
 
     // Check if [index] is on an empty line already.
-    final isNewlineBefore = previous == null || previous.data.endsWith('\n');
-    final isNewlineAfter = target.data.startsWith('\n');
+    final isNewlineBefore = previous == null || previous.endsWith('\n');
+    final isNewlineAfter = target.startsWith('\n');
     final isOnEmptyLine = isNewlineBefore && isNewlineAfter;
     if (isOnEmptyLine) {
       return result..insert(EmbedNode.kPlainTextPlaceholder, embed.toJson());
@@ -188,26 +189,26 @@ class FormatEmbedsRule extends FormatRule {
     // and insert our embed.
     final lineStyle = _getLineStyle(iter, target);
     if (!isNewlineBefore) {
-      result..insert('\n', lineStyle);
+      result.insert('\n', lineStyle);
     }
-    result..insert(EmbedNode.kPlainTextPlaceholder, embed.toJson());
+    result.insert(EmbedNode.kPlainTextPlaceholder, embed.toJson());
     if (!isNewlineAfter) {
-      result..insert('\n');
+      result.insert('\n');
     }
     result.delete(length);
     return result;
   }
 
   Map<String, dynamic> _getLineStyle(
-      DeltaIterator iterator, Operation current) {
-    if (current.data.contains('\n')) {
+      DeltaIterator iterator, Op current) {
+    if (current.contains('\n')) {
       return current.attributes;
     }
     // Continue looking for line-break.
     Map<String, dynamic> attributes;
     while (iterator.hasNext) {
       final op = iterator.next();
-      final lf = op.data.indexOf('\n');
+      final lf = op.indexOf('\n');
       if (lf >= 0) {
         attributes = op.attributes;
         break;

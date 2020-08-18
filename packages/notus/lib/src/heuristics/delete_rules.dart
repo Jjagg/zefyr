@@ -42,7 +42,9 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
     final iter = DeltaIterator(document);
     iter.skip(index);
     final target = iter.next(1);
-    if (target.data != '\n') return null;
+
+    if (!target.isString('\n')) return null;
+
     iter.skip(length - 1);
     final result = Delta()
       ..retain(index)
@@ -51,13 +53,13 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
     // Look for next line-break to apply the attributes
     while (iter.hasNext) {
       final op = iter.next();
-      final lf = op.data.indexOf('\n');
+      final lf = op.indexOf('\n');
       if (lf == -1) {
-        result..retain(op.length);
+        result.retain(op.length);
         continue;
       }
       var attributes = _unsetAttributes(op.attributes);
-      if (target.isNotPlain) {
+      if (target.hasAttributes) {
         attributes ??= <String, dynamic>{};
         attributes.addAll(target.attributes);
       }
@@ -89,34 +91,34 @@ class EnsureEmbedLineRule extends DeleteRule {
     var remaining = length;
     var foundEmbed = false;
     var hasLineBreakBefore = false;
-    if (op != null && op.data.endsWith(kZeroWidthSpace)) {
+    if (op != null && op.endsWith(kZeroWidthSpace)) {
       foundEmbed = true;
       var candidate = iter.next(1);
       remaining--;
-      if (candidate.data == '\n') {
+      if (candidate?.isString('\n') ?? false) {
         indexDelta += 1;
         lengthDelta -= 1;
 
         /// Check if it's an empty line
         candidate = iter.next(1);
         remaining--;
-        if (candidate.data == '\n') {
+        if (candidate?.isString('\n') ?? false) {
           // Allow deleting empty line after an embed.
           lengthDelta += 1;
         }
       }
     } else {
       // If op is `null` it's a beginning of the doc, e.g. implicit line break.
-      hasLineBreakBefore = op == null || op.data.endsWith('\n');
+      hasLineBreakBefore = op == null || op.endsWith('\n');
     }
 
     // Second, check if line-break deleted before an embed.
     op = iter.skip(remaining);
-    if (op != null && op.data.endsWith('\n')) {
+    if (op != null && op.endsWith('\n')) {
       final candidate = iter.next(1);
       // If there is a line-break before deleted range we allow the operation
       // since it results in a correctly formatted line with single embed in it.
-      if (candidate.data == kZeroWidthSpace && !hasLineBreakBefore) {
+      if (candidate.isString(kZeroWidthSpace) && !hasLineBreakBefore) {
         foundEmbed = true;
         lengthDelta -= 1;
       }

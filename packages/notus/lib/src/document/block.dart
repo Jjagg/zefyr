@@ -56,7 +56,7 @@ class BlockNode extends ContainerNode<LineNode>
     // Line nodes take care of incorporating block style into their delta.
     return children
         .map((child) => child.toDelta())
-        .fold(Delta(), (a, b) => a.concat(b));
+        .fold(Delta(), (a, b) => Delta.concat(a, b));
   }
 
   @override

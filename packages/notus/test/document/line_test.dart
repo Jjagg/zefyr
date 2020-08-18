@@ -23,7 +23,7 @@ void main() {
       expect(node, isEmpty);
       expect(node.length, 1);
       expect(node.style, NotusStyle());
-      expect(node.toDelta().toList(), [Operation.insert('\n')]);
+      expect(node.toDelta().operations, [InsertOp.string('\n')]);
     });
 
     test('hasEmbed', () {
