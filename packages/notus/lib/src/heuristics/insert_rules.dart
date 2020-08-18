@@ -246,8 +246,8 @@ class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
     final iter = DeltaIterator(document);
     final previous = iter.skip(index);
     final target = iter.next();
-    final beforeEmbed = target.isString(EmbedNode.kPlainTextPlaceholder);
-    final afterEmbed = previous?.isString(EmbedNode.kPlainTextPlaceholder);
+    final beforeEmbed = target?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
+    final afterEmbed = previous?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
     if (beforeEmbed || afterEmbed) {
       final delta = Delta()..retain(index);
       if (beforeEmbed && !text.endsWith('\n')) {

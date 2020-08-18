@@ -29,18 +29,13 @@ class _TextFieldScreenState extends State<TextFieldScreen> {
       appBar: AppBar(
         title: ZefyrLogo(),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _singleTextFieldcontroller,
-                maxLines: 1000,
-              ),
-            ),
-          ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _singleTextFieldcontroller,
+            maxLines: 1000,
+          ),
         ),
       ),
     );
