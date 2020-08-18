@@ -14,16 +14,6 @@ NotusDocument dartconfDoc() {
   return NotusDocument.fromDelta(delta);
 }
 
-NotusDocument dartconfEmbedDoc() {
-  final hr = NotusAttribute.embed.horizontalRule.toJson();
-  final delta = Delta()
-    ..insert('DartConf\n')
-    ..insert(kZeroWidthSpace, hr)
-    ..insert('\n')
-    ..insert('Los Angeles\n');
-  return NotusDocument.fromDelta(delta);
-}
-
 final ul = NotusAttribute.ul.toJson();
 final h1 = NotusAttribute.h1.toJson();
 
@@ -206,14 +196,6 @@ void main() {
       expect(line.style.get(NotusAttribute.heading), NotusAttribute.h1);
     });
 
-    test('delete which results in an empty change', () {
-      // This test relies on a delete rule which ensures line-breaks around
-      // and embed.
-      final doc = dartconfEmbedDoc();
-      doc.delete(8, 1);
-      expect(doc.toPlainText(), 'DartConf\n${kZeroWidthSpace}\nLos Angeles\n');
-    });
-
     test('checks for closed state', () {
       final doc = dartconfDoc();
       expect(doc.isClosed, isFalse);
@@ -239,107 +221,11 @@ void main() {
       expect(style, isNotNull);
     });
 
-    test('insert embed after line-break', () {
-      final doc = dartconfDoc();
-      doc.format(9, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      expect(doc.root.first.toPlainText(), 'DartConf\n');
-      expect(doc.root.last.toPlainText(), 'Los Angeles\n');
-      LineNode line = doc.root.children.elementAt(1);
-      EmbedNode embed = line.first;
-      expect(embed.toPlainText(), EmbedNode.kPlainTextPlaceholder);
-      final style = NotusStyle().merge(NotusAttribute.embed.horizontalRule);
-      expect(embed.style, style);
-    });
-
-    test('insert embed before line-break', () {
-      final doc = dartconfDoc();
-      doc.format(8, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      expect(doc.root.first.toPlainText(), 'DartConf\n');
-      expect(doc.root.last.toPlainText(), 'Los Angeles\n');
-      LineNode line = doc.root.children.elementAt(1);
-      EmbedNode embed = line.first;
-      expect(embed.toPlainText(), EmbedNode.kPlainTextPlaceholder);
-      final style = NotusStyle().merge(NotusAttribute.embed.horizontalRule);
-      expect(embed.style, style);
-    });
-
-    test('insert embed in the middle of a line', () {
-      final doc = dartconfDoc();
-      doc.format(4, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(4));
-      expect(doc.root.children.elementAt(0).toPlainText(), 'Dart\n');
-      expect(doc.root.children.elementAt(1).toPlainText(),
-          '${EmbedNode.kPlainTextPlaceholder}\n');
-      expect(doc.root.children.elementAt(2).toPlainText(), 'Conf\n');
-      expect(doc.root.children.elementAt(3).toPlainText(), 'Los Angeles\n');
-      LineNode line = doc.root.children.elementAt(1);
-      EmbedNode embed = line.first;
-      expect(embed.toPlainText(), EmbedNode.kPlainTextPlaceholder);
-      final style = NotusStyle().merge(NotusAttribute.embed.horizontalRule);
-      expect(embed.style, style);
-    });
-
-    test('delete embed', () {
-      final doc = dartconfDoc();
-      doc.format(8, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      doc.delete(9, 1);
-      expect(doc.root.children, hasLength(3));
-      LineNode line = doc.root.children.elementAt(1);
-      expect(line, isEmpty);
-    });
-
     test('insert text containing zero-width space', () {
       final doc = dartconfDoc();
       final change = doc.insert(0, EmbedNode.kPlainTextPlaceholder);
       expect(change, isEmpty);
       expect(doc.length, 21);
-    });
-
-    test('insert text before embed', () {
-      final doc = dartconfDoc();
-      doc.format(8, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      doc.insert(9, 'text');
-      expect(doc.root.children, hasLength(4));
-      expect(doc.root.children.elementAt(1).toPlainText(), 'text\n');
-      expect(doc.root.children.elementAt(2).toPlainText(),
-          '${EmbedNode.kPlainTextPlaceholder}\n');
-    });
-
-    test('insert text after embed', () {
-      final doc = dartconfDoc();
-      doc.format(8, 0, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      doc.insert(10, 'text');
-      expect(doc.root.children, hasLength(4));
-      expect(doc.root.children.elementAt(1).toPlainText(),
-          '${EmbedNode.kPlainTextPlaceholder}\n');
-      expect(doc.root.children.elementAt(2).toPlainText(), 'text\n');
-    });
-
-    test('replace text with embed', () {
-      final doc = dartconfDoc();
-      doc.format(4, 4, NotusAttribute.embed.horizontalRule);
-      expect(doc.root.children, hasLength(3));
-      expect(doc.root.children.elementAt(0).toPlainText(), 'Dart\n');
-      expect(doc.root.children.elementAt(1).toPlainText(),
-          '${EmbedNode.kPlainTextPlaceholder}\n');
-      expect(doc.root.children.elementAt(2).toPlainText(), 'Los Angeles\n');
-    });
-
-    test('replace embed with embed', () {
-      final doc = dartconfDoc();
-      doc.format(4, 4, NotusAttribute.embed.horizontalRule);
-      doc.format(5, 1, NotusAttribute.embed.horizontalRule);
-
-      expect(doc.root.children, hasLength(3));
-      expect(doc.root.children.elementAt(0).toPlainText(), 'Dart\n');
-      expect(doc.root.children.elementAt(1).toPlainText(),
-          '${EmbedNode.kPlainTextPlaceholder}\n');
-      expect(doc.root.children.elementAt(2).toPlainText(), 'Los Angeles\n');
     });
   });
 }

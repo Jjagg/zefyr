@@ -162,14 +162,6 @@ class NotusDocument {
 
     var change = Delta();
 
-    if (attribute is EmbedAttribute && length > 0) {
-      // Must delete selected length of text before applying embed attribute
-      // since inserting an embed in non-empty selection is essentially a
-      // replace operation.
-      change = delete(index, length);
-      length = 0;
-    }
-
     final formatChange =
         _heuristics.applyFormatRules(this, index, length, attribute);
     if (formatChange.isNotEmpty) {

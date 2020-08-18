@@ -105,20 +105,6 @@ abstract class LeafNode extends Node
   void applyStyle(NotusStyle value) {
     assert(value != null && (value.isInline || value.isEmpty),
         'Style cannot be applied to this leaf node: $value');
-    assert(() {
-      if (value.contains(NotusAttribute.embed)) {
-        if (value.get(NotusAttribute.embed) == NotusAttribute.embed.unset) {
-          throw 'Unsetting embed attribute is not allowed. '
-              'This operation means that the embed itself must be deleted from the document. '
-              'Make sure there is FormatEmbedsRule in your heuristics registry, '
-              'which is responsible for handling this scenario.';
-        }
-        if (this is! EmbedNode) {
-          throw 'Embed style can only be applied to an EmbedNode.';
-        }
-      }
-      return true;
-    }());
 
     super.applyStyle(value);
   }

@@ -16,10 +16,10 @@ int getPositionDelta(Delta user, Delta actual) {
   final actualIter = DeltaIterator(actual);
   var diff = 0;
   while (userIter.hasNext || actualIter.hasNext) {
-    final length = math.min(userIter.peekLength(), actualIter.peekLength());
-    final userOp = userIter.next(length);
-    final actualOp = actualIter.next(length);
-    assert(userOp.length == actualOp.length);
+    final zipped = DeltaIterator.zipNext(userIter, actualIter);
+    final userOp = zipped.op1;
+    final actualOp = zipped.op2;
+
     if (userOp.type == actualOp.type) continue;
     if (userOp.isInsert && actualOp.isRetain) {
       diff -= userOp.length;

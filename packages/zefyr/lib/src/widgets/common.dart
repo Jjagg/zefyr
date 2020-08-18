@@ -46,15 +46,11 @@ class _ZefyrLineState extends State<ZefyrLine> {
     final theme = Theme.of(context);
 
     Widget content;
-    if (widget.node.hasEmbed) {
-      content = buildEmbed(context, scope);
-    } else {
-      assert(widget.style != null);
-      content = ZefyrRichText(
-        node: widget.node,
-        text: buildText(context),
-      );
-    }
+    assert(widget.style != null);
+    content = ZefyrRichText(
+      node: widget.node,
+      text: buildText(context),
+    );
 
     if (scope.isEditable) {
       Color cursorColor;
@@ -149,18 +145,5 @@ class _ZefyrLineState extends State<ZefyrLine> {
       result = result.merge(theme.attributeTheme.link);
     }
     return result;
-  }
-
-  Widget buildEmbed(BuildContext context, ZefyrScope scope) {
-    EmbedNode node = widget.node.children.single;
-    EmbedAttribute embed = node.style.get(NotusAttribute.embed);
-
-    if (embed.type == EmbedType.horizontalRule) {
-      return ZefyrHorizontalRule(node: node);
-    } else if (embed.type == EmbedType.image) {
-      return ZefyrImage(node: node, delegate: scope.imageDelegate);
-    } else {
-      throw UnimplementedError('Unimplemented embed type ${embed.type}');
-    }
   }
 }

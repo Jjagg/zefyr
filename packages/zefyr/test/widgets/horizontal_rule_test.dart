@@ -61,5 +61,5 @@ void main() {
       expect(editor.selection.baseOffset, embed.documentOffset);
       expect(editor.selection.extentOffset, embed.documentOffset + 1);
     });
-  });
+  }, skip: 'Fix horizontal rule');
 }

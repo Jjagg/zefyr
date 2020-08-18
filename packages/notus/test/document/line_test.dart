@@ -263,17 +263,5 @@ void main() {
       var attrs = line.collectStyle(result.offset, 5);
       expect(attrs, h2Style);
     });
-
-    test('collectStyle with embed nodes', () {
-      root.insert(0, 'Hello world\n\nMore text.\n', null);
-      var style = NotusStyle();
-      style = style.put(NotusAttribute.embed.horizontalRule);
-      root.insert(12, EmbedNode.kPlainTextPlaceholder, style);
-
-      var lookup = root.lookup(0);
-      LineNode line = lookup.node;
-      var result = line.collectStyle(lookup.offset, 15);
-      expect(result, isEmpty);
-    });
   });
 }

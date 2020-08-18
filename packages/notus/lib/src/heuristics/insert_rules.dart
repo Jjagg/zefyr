@@ -214,7 +214,8 @@ class AutoFormatLinksRule extends InsertRule {
     try {
       final link = Uri.parse(candidate);
       if (!['https', 'http'].contains(link.scheme)) {
-        // TODO: might need a more robust way of validating links here.
+        // TODO Need to relax auto link conditions
+        // Markdig: https://github.com/lunet-io/markdig/blob/master/src/Markdig.Tests/Specs/AutoLinks.md
         return null;
       }
       final attributes = previous.attributes ?? <String, dynamic>{};
@@ -246,8 +247,10 @@ class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
     final iter = DeltaIterator(document);
     final previous = iter.skip(index);
     final target = iter.next();
-    final beforeEmbed = target?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
-    final afterEmbed = previous?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
+    final beforeEmbed =
+        target?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
+    final afterEmbed =
+        previous?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
     if (beforeEmbed || afterEmbed) {
       final delta = Delta()..retain(index);
       if (beforeEmbed && !text.endsWith('\n')) {
