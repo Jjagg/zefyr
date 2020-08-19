@@ -31,7 +31,7 @@ void main() {
     test('toString', () {
       node.applyAttribute(NotusAttribute.bold);
       node.applyAttribute(NotusAttribute.link.fromString('link'));
-      expect('$node', '⟨London "Grammar"⟩ab');
+      expect('$node', '⟨London "Grammar"⟩boldlink');
     });
 
     test('new text with contents', () {

@@ -15,7 +15,7 @@ void main() {
       await editor.tapButtonWithIcon(Icons.format_quote);
 
       BlockNode block = editor.document.root.children.first;
-      expect(block.style.get(NotusAttribute.block), NotusAttribute.block.quote);
+      expect(block.style.lineStyle(), NotusAttribute.bq);
     });
   });
 }

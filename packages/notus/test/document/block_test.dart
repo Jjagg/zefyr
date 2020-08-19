@@ -29,7 +29,7 @@ void main() {
       final block = BlockNode();
       block.applyAttribute(NotusAttribute.ul);
       block.add(line);
-      final expected = '§ {ul}\n  └ ¶ ⟨London "Grammar"⟩ ⏎';
+      final expected = '§ {list: bullet}\n  └ ¶ ⟨London "Grammar"⟩ ⏎';
       expect('$block', expected);
     });
 
@@ -54,7 +54,7 @@ void main() {
 
       expect(root.childCount, 1);
       BlockNode block = root.first;
-      expect(block.style.get(NotusAttribute.block), NotusAttribute.ul);
+      expect(block.style.lineStyle(), NotusAttribute.ul);
       expect(block.childCount, 1);
       expect(block.first, const TypeMatcher<LineNode>());
 
@@ -71,7 +71,7 @@ void main() {
 
       expect(root.childCount, 2);
       BlockNode block = root.last;
-      expect(block.style.get(NotusAttribute.block), NotusAttribute.ul);
+      expect(block.style.lineStyle(), NotusAttribute.ul);
       expect(block.childCount, 1);
       expect(block.first, const TypeMatcher<LineNode>());
     });
@@ -83,7 +83,7 @@ void main() {
 
       expect(root.childCount, 1);
       BlockNode block = root.first;
-      expect(block.style.get(NotusAttribute.block), NotusAttribute.ul);
+      expect(block.style.lineStyle(), NotusAttribute.ul);
       expect(block.childCount, 2);
       expect(block.first, const TypeMatcher<LineNode>());
       expect(block.last, const TypeMatcher<LineNode>());

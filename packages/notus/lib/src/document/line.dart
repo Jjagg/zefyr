@@ -294,26 +294,28 @@ class LineNode extends ContainerNode<LeafNode>
     if (newStyle == null || newStyle.isEmpty) return;
 
     applyStyle(newStyle);
-    if (!newStyle.contains(NotusAttribute.block)) {
+    final lineStyle = newStyle.lineStyle();
+    // TODO This logic should be the same for all line formatting
+    // Instead, formatting rules should determine if a block is created
+    if (lineStyle == null || lineStyle.key == NotusAttribute.heading.key) {
       return;
     } // no block-level changes
 
-    final blockStyle = newStyle.get(NotusAttribute.block);
     if (parent is BlockNode) {
-      final parentStyle = (parent as BlockNode).style.get(NotusAttribute.block);
-      if (blockStyle == NotusAttribute.block.unset) {
-        unwrap();
-      } else if (blockStyle != parentStyle) {
+      final parentStyle = (parent as BlockNode).style.lineStyle();
+      if (lineStyle.isUnset) {
+        if (lineStyle.key == parentStyle.key) unwrap();
+      } else if (lineStyle != parentStyle) {
         unwrap();
         final block = BlockNode();
-        block.applyAttribute(blockStyle);
+        block.applyAttribute(lineStyle);
         wrap(block);
         block.optimize();
-      } // else the same style, no-op.
-    } else if (blockStyle != NotusAttribute.block.unset) {
+      } // else the same style or unset with different style => no-op.
+    } else if (!lineStyle.isUnset) {
       // Only wrap with a new block if this is not an unset
       final block = BlockNode();
-      block.applyAttribute(blockStyle);
+      block.applyAttribute(lineStyle);
       wrap(block);
       block.optimize();
     }

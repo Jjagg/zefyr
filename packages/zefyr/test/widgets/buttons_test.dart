@@ -65,9 +65,9 @@ void main() {
       await editor.tapButtonWithIcon(Icons.format_size);
       await editor.tapButtonWithText('H3');
       LineNode line = editor.document.root.children.first;
-      expect(line.style.containsSame(NotusAttribute.heading.level3), isTrue);
+      expect(line.style.containsSame(NotusAttribute.h3), isTrue);
       await editor.tapButtonWithText('H2');
-      expect(line.style.containsSame(NotusAttribute.heading.level2), isTrue);
+      expect(line.style.containsSame(NotusAttribute.h2), isTrue);
     });
 
     testWidgets('close overlay', (tester) async {

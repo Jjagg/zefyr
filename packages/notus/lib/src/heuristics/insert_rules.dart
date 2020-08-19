@@ -72,9 +72,8 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
   }
 }
 
-/// of a line (right before a line-break).
-
 /// Resets format for a newly inserted line when insert occurred at the end
+/// of a line (right before a line-break).
 class ResetLineFormatOnNewLineRule extends InsertRule {
   const ResetLineFormatOnNewLineRule();
 
@@ -120,19 +119,21 @@ class AutoExitBlockRule extends InsertRule {
     final iter = DeltaIterator(document);
     final previous = iter.skip(index);
     final target = iter.next();
-    final isInBlock = target.hasAttributes &&
-        target.attributes.containsKey(NotusAttribute.block.key);
-    if (isEmptyLine(previous, target) && isInBlock) {
-      // We reset block style even if this line is not the last one in it's
+    final blockAttributeKey = target.hasAttributes
+        ? target.attributes.keys
+            .firstWhere((a) => NotusAttributes.isLineScoped(a))
+        : null;
+    if (isEmptyLine(previous, target) && blockAttributeKey != null) {
+      // We reset block style even if this line is not the last one in its
       // block which effectively splits the block into two.
       // TODO: For code blocks this should not split the block but allow inserting as many lines as needed.
-      var attributes;
+      Map<String, dynamic> attributes;
       if (target.attributes != null) {
         attributes = Map<String, dynamic>.of(target.attributes);
       } else {
         attributes = <String, dynamic>{};
       }
-      attributes.addAll(NotusAttribute.block.unset.toJson());
+      attributes[blockAttributeKey] = null;
       return Delta()..retain(index)..retain(1, attributes);
     }
     return null;
@@ -287,26 +288,28 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
     iter.skip(index);
 
     // Look for next line-break.
-    Map<String, dynamic> lineStyle;
+    Map<String, dynamic> lineAttributes;
     while (iter.hasNext) {
       final op = iter.next();
       final lf = op.indexOf('\n');
       if (lf >= 0) {
-        lineStyle = op.attributes;
+        lineAttributes = op.attributes;
         break;
       }
     }
 
+    final lineStyleKey = lineAttributes == null
+        ? lineAttributes.keys.firstWhere((a) => NotusAttributes.isLineScoped(a))
+        : null;
+
     Map<String, dynamic> resetStyle;
     Map<String, dynamic> blockStyle;
-    if (lineStyle != null) {
-      if (lineStyle.containsKey(NotusAttribute.heading.key)) {
+    if (lineStyleKey != null) {
+      if (lineStyleKey == NotusAttribute.heading.key) {
         resetStyle = NotusAttribute.heading.unset.toJson();
-      }
-
-      if (lineStyle.containsKey(NotusAttribute.block.key)) {
+      } else if (NotusAttributes.contains(lineStyleKey)) {
         blockStyle = <String, dynamic>{
-          NotusAttribute.block.key: lineStyle[NotusAttribute.block.key]
+          lineStyleKey: lineAttributes[lineStyleKey]
         };
       }
     }
@@ -319,7 +322,7 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
         result.insert(line);
       }
       if (i == 0) {
-        result.insert('\n', lineStyle);
+        result.insert('\n', lineAttributes);
       } else if (i == lines.length - 1) {
         if (resetStyle != null) result.retain(1, resetStyle);
       } else {

@@ -41,13 +41,13 @@ final kZefyrToolbarAttributeActions = <ZefyrToolbarAction, NotusAttributeKey>{
   ZefyrToolbarAction.italic: NotusAttribute.italic,
   ZefyrToolbarAction.link: NotusAttribute.link,
   ZefyrToolbarAction.heading: NotusAttribute.heading,
-  ZefyrToolbarAction.headingLevel1: NotusAttribute.heading.level1,
-  ZefyrToolbarAction.headingLevel2: NotusAttribute.heading.level2,
-  ZefyrToolbarAction.headingLevel3: NotusAttribute.heading.level3,
-  ZefyrToolbarAction.bulletList: NotusAttribute.block.bulletList,
-  ZefyrToolbarAction.numberList: NotusAttribute.block.numberList,
-  ZefyrToolbarAction.code: NotusAttribute.block.code,
-  ZefyrToolbarAction.quote: NotusAttribute.block.quote,
+  ZefyrToolbarAction.headingLevel1: NotusAttribute.h1,
+  ZefyrToolbarAction.headingLevel2: NotusAttribute.h2,
+  ZefyrToolbarAction.headingLevel3: NotusAttribute.h3,
+  ZefyrToolbarAction.bulletList: NotusAttribute.ul,
+  ZefyrToolbarAction.numberList: NotusAttribute.ol,
+  ZefyrToolbarAction.code: NotusAttribute.code,
+  ZefyrToolbarAction.quote: NotusAttribute.bq,
 };
 
 /// Allows customizing appearance of [ZefyrToolbar].

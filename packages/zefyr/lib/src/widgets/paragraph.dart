@@ -56,11 +56,11 @@ class ZefyrHeading extends StatelessWidget {
   static LineTheme themeOf(LineNode node, BuildContext context) {
     final theme = ZefyrTheme.of(context);
     final style = node.style.get(NotusAttribute.heading);
-    if (style == NotusAttribute.heading.level1) {
+    if (style == NotusAttribute.h1) {
       return theme.attributeTheme.heading1;
-    } else if (style == NotusAttribute.heading.level2) {
+    } else if (style == NotusAttribute.h2) {
       return theme.attributeTheme.heading2;
-    } else if (style == NotusAttribute.heading.level3) {
+    } else if (style == NotusAttribute.h3) {
       return theme.attributeTheme.heading3;
     }
     throw UnimplementedError('Unsupported heading style $style');

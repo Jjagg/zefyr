@@ -32,11 +32,11 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
     final iterator = DeltaIterator(input);
     final buffer = StringBuffer();
     final lineBuffer = StringBuffer();
-    NotusAttribute<String> currentBlockStyle;
+    NotusAttribute currentBlockStyle;
     var currentInlineStyle = NotusStyle();
     var currentBlockLines = [];
 
-    void _handleBlock(NotusAttribute<String> blockStyle) {
+    void _handleBlock(NotusAttribute blockStyle) {
       if (currentBlockLines.isEmpty) {
         return; // Empty block
       }
@@ -67,7 +67,7 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
 
     void _handleLine(Map<String, dynamic> attributes) {
       final style = NotusStyle.fromJson(attributes);
-      final lineBlock = style.get(NotusAttribute.block);
+      final lineBlock = style.lineStyle();
       if (lineBlock == currentBlockStyle) {
         currentBlockLines.add(_writeLine(lineBuffer.toString(), style));
       } else {
@@ -168,9 +168,8 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
       _writeLinkTag(buffer, attribute as NotusAttribute<String>, close: close);
     } else if (attribute.key == NotusAttribute.heading.key) {
       _writeHeadingTag(buffer, attribute as NotusAttribute<int>);
-    } else if (attribute.key == NotusAttribute.block.key) {
-      _writeBlockTag(buffer, attribute as NotusAttribute<String>, close: close);
     } else {
+      throw new UnimplementedError('Some block types not handled yet.');
       throw ArgumentError('Cannot handle $attribute');
     }
   }
@@ -197,7 +196,7 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
     buffer.write('#' * level + ' ');
   }
 
-  void _writeBlockTag(StringBuffer buffer, NotusAttribute<String> block,
+  void _writeBlockTag(StringBuffer buffer, NotusAttribute block,
       {bool close = false}) {
     if (block == NotusAttribute.code) {
       if (close) {

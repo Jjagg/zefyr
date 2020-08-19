@@ -94,14 +94,14 @@ class ZefyrViewState extends State<ZefyrView> {
     }
 
     final BlockNode block = node;
-    final blockStyle = block.style.get(NotusAttribute.block);
-    if (blockStyle == NotusAttribute.block.code) {
+    final blockStyle = block.style.lineStyle();
+    if (blockStyle == NotusAttribute.code) {
       return ZefyrCode(node: block);
-    } else if (blockStyle == NotusAttribute.block.bulletList) {
+    } else if (blockStyle == NotusAttribute.ul) {
       return ZefyrList(node: block);
-    } else if (blockStyle == NotusAttribute.block.numberList) {
+    } else if (blockStyle == NotusAttribute.ol) {
       return ZefyrList(node: block);
-    } else if (blockStyle == NotusAttribute.block.quote) {
+    } else if (blockStyle == NotusAttribute.bq) {
       return ZefyrQuote(node: block);
     }
 

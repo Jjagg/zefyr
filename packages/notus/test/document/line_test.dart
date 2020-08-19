@@ -54,7 +54,7 @@ void main() {
       node.insert(0, 'London "Grammar" - Hey Now', null);
       node.retain(0, 16, boldStyle);
       node.applyAttribute(NotusAttribute.h1);
-      expect('$node', '¶ ⟨London "Grammar"⟩b → ⟨ - Hey Now⟩ ⏎ {heading: 1}');
+      expect('$node', '¶ ⟨London "Grammar"⟩bold → ⟨ - Hey Now⟩ ⏎ {header: 1}');
     });
 
     test('splitAt with multiple text segments', () {
@@ -154,13 +154,13 @@ void main() {
     });
 
     test('format root line to unset block style', () {
-      final unsetBlock = NotusStyle().put(NotusAttribute.block.unset);
+      final unsetBlock = NotusStyle().put(NotusAttribute.ul.unset);
       root.insert(0, 'Hello world', null);
       root.retain(11, 1, unsetBlock);
       expect(root.childCount, 1);
       expect(root.first, const TypeMatcher<LineNode>());
       LineNode line = root.first;
-      expect(line.style.contains(NotusAttribute.block), isFalse);
+      expect(line.style.contains(NotusAttribute.ul), isFalse);
     });
 
     test('format multiple empty lines', () {

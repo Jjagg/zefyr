@@ -123,7 +123,7 @@ void main() {
       expect(actual, isNotNull);
       final expected = Delta()
         ..retain(14)
-        ..retain(1, NotusAttribute.block.unset.toJson());
+        ..retain(1, NotusAttribute.ul.unset.toJson());
       expect(actual, expected);
     });
 
@@ -139,7 +139,7 @@ void main() {
       final doc = Delta()..insert('\n', ul);
       final actual = rule.apply(doc, 0, '\n');
       expect(actual, isNotNull);
-      final expected = Delta()..retain(1, NotusAttribute.block.unset.toJson());
+      final expected = Delta()..retain(1, NotusAttribute.ul.unset.toJson());
       expect(actual, expected);
     });
 

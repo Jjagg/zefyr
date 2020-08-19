@@ -62,7 +62,7 @@ void main() {
       var line = widget.controller.document.root.children.first;
       expect(line, isInstanceOf<BlockNode>());
       BlockNode block = line;
-      expect(block.style.contains(NotusAttribute.block.bulletList), isTrue);
+      expect(block.style.contains(NotusAttribute.ul), isTrue);
 
       await sandbox.tapSecondEditor();
       expect(sandbox.firstFocusNode.hasFocus, isFalse);
@@ -74,7 +74,7 @@ void main() {
       line = widget.controller.document.root.children.first;
       expect(line, isInstanceOf<BlockNode>());
       block = line;
-      expect(block.style.contains(NotusAttribute.block.bulletList), isTrue);
+      expect(block.style.contains(NotusAttribute.ul), isTrue);
     });
   });
 }

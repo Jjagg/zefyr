@@ -6,9 +6,9 @@ import 'package:notus/notus.dart';
 
 void main() {
   group('$NotusStyle', () {
-    test('get', () {
-      var attrs = NotusStyle.fromJson(<String, dynamic>{'block': 'ul'});
-      var attr = attrs.get(NotusAttribute.block);
+    test('lineStyle', () {
+      var attrs = NotusStyle.fromJson(<String, dynamic>{'list': 'bullet'});
+      var attr = attrs.lineStyle();
       expect(attr, NotusAttribute.ul);
     });
   });

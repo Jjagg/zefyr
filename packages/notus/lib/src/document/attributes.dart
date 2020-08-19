@@ -15,35 +15,32 @@ enum NotusAttributeScope {
   /// Line-scoped attributes are only applicable to a line of text as a whole.
   ///
   /// Line attributes do not have any effect on any character within the line.
+  /// Only one line attribute may be applied to a line at any time.
   line,
 }
 
 /// Interface for objects which provide access to an attribute key.
 ///
 /// Implemented by [NotusAttribute] and [NotusAttributeBuilder].
-abstract class NotusAttributeKey<T> {
+abstract class NotusAttributeKey {
   /// Unique key of this attribute.
   String get key;
 }
 
-/// Builder for style attributes.
-///
-/// Useful in scenarios when an attribute value is not known upfront, for
-/// instance, link attribute.
-///
-/// See also:
-///   * [LinkAttributeBuilder]
-///   * [BlockAttributeBuilder]
-///   * [HeadingAttributeBuilder]
-abstract class NotusAttributeBuilder<T> implements NotusAttributeKey<T> {
-  const NotusAttributeBuilder._(this.key, this.scope);
-
+abstract class NotusAttributeBase<T> implements NotusAttributeKey {
   @override
   final String key;
+
+  /// Scope of this attribute.
   final NotusAttributeScope scope;
-  NotusAttribute<T> get unset => NotusAttribute<T>._(key, scope, null);
-  NotusAttribute<T> withValue(T value) =>
-      NotusAttribute<T>._(key, scope, value);
+
+  bool get isLineScoped => scope == NotusAttributeScope.line;
+  bool get isInlineScoped => scope == NotusAttributeScope.inline;
+
+  const NotusAttributeBase(this.key, this.scope);
+
+  NotusAttribute<T> get unset => NotusAttribute<T>(key, scope, null);
+  NotusAttribute<T> withValue(T value) => NotusAttribute<T>(key, scope, value);
 }
 
 /// Style attribute applicable to a segment of a Notus document.
@@ -69,23 +66,15 @@ abstract class NotusAttributeBuilder<T> implements NotusAttributeKey<T> {
 ///   * [NotusAttribute.italic]
 ///   * [NotusAttribute.link]
 ///   * [NotusAttribute.heading]
-///   * [NotusAttribute.block]
-class NotusAttribute<T> implements NotusAttributeBuilder<T> {
-  static final Map<String, NotusAttributeBuilder> _registry = {
-    NotusAttribute.bold.key: NotusAttribute.bold,
-    NotusAttribute.italic.key: NotusAttribute.italic,
-    NotusAttribute.link.key: NotusAttribute.link,
-    NotusAttribute.heading.key: NotusAttribute.heading,
-    NotusAttribute.block.key: NotusAttribute.block,
-  };
-
+class NotusAttribute<T> extends NotusAttributeBase {
   // Inline attributes
 
   /// Bold style attribute.
-  static const bold = _BoldAttribute();
+  static const bold = NotusAttribute('bold', NotusAttributeScope.inline, true);
 
   /// Italic style attribute.
-  static const italic = _ItalicAttribute();
+  static const italic =
+      NotusAttribute('italic', NotusAttributeScope.inline, true);
 
   /// Link style attribute.
   // ignore: const_eval_throws_exception
@@ -97,49 +86,40 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   // ignore: const_eval_throws_exception
   static const heading = HeadingAttributeBuilder._();
 
-  /// Alias for [NotusAttribute.heading.level1].
-  static NotusAttribute<int> get h1 => heading.level1;
+  /// Level 1 heading, equivalent of `H1` in HTML.
+  static const h1 = NotusAttribute('header', NotusAttributeScope.line, 1);
 
-  /// Alias for [NotusAttribute.heading.level2].
-  static NotusAttribute<int> get h2 => heading.level2;
+  /// Level 2 heading, equivalent of `H2` in HTML.
+  static const h2 = NotusAttribute('header', NotusAttributeScope.line, 2);
 
-  /// Alias for [NotusAttribute.heading.level3].
-  static NotusAttribute<int> get h3 => heading.level3;
+  /// Level 3 heading, equivalent of `H3` in HTML.
+  static const h3 = NotusAttribute('header', NotusAttributeScope.line, 3);
 
-  /// Block attribute
-  // ignore: const_eval_throws_exception
-  static const block = BlockAttributeBuilder._();
+  /// Formats a block of lines as a bullet list.
+  static const ul = NotusAttribute('list', NotusAttributeScope.line, 'bullet');
 
-  /// Alias for [NotusAttribute.block.bulletList].
-  static NotusAttribute<String> get ul => block.bulletList;
+  /// Formats a block of lines as a number list.
+  static const ol = NotusAttribute('list', NotusAttributeScope.line, 'ordered');
 
-  /// Alias for [NotusAttribute.block.numberList].
-  static NotusAttribute<String> get ol => block.numberList;
+  /// Formats a block of lines as a quote.
+  static const bq =
+      NotusAttribute('blockquote', NotusAttributeScope.line, true);
 
-  /// Alias for [NotusAttribute.block.quote].
-  static NotusAttribute<String> get bq => block.quote;
-
-  /// Alias for [NotusAttribute.block.code].
-  static NotusAttribute<String> get code => block.code;
+  /// Formats a block of lines as a code snippet, using monospace font.
+  static const code =
+      NotusAttribute('code-block', NotusAttributeScope.line, true);
 
   static NotusAttribute _fromKeyValue(String key, dynamic value) {
-    if (!_registry.containsKey(key)) {
+    if (!NotusAttributes._registry.containsKey(key)) {
       throw ArgumentError.value(
           key, 'No attribute with key "$key" registered.');
     }
-    final builder = _registry[key];
+    final builder = NotusAttributes._registry[key];
     return builder.withValue(value);
   }
 
-  const NotusAttribute._(this.key, this.scope, this.value);
-
-  /// Unique key of this attribute.
-  @override
-  final String key;
-
-  /// Scope of this attribute.
-  @override
-  final NotusAttributeScope scope;
+  const NotusAttribute(String key, NotusAttributeScope scope, this.value)
+      : super(key, scope);
 
   /// Value of this attribute.
   ///
@@ -157,8 +137,7 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   ///
   /// When composed into a rich text document, unset attributes remove
   /// associated style.
-  @override
-  NotusAttribute<T> get unset => NotusAttribute<T>._(key, scope, null);
+  NotusAttribute<T> get unset => NotusAttribute<T>(key, scope, null);
 
   /// Returns `true` if this attribute is an unset attribute.
   bool get isUnset => value == null;
@@ -167,14 +146,10 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   bool get isInline => scope == NotusAttributeScope.inline;
 
   @override
-  NotusAttribute<T> withValue(T value) =>
-      NotusAttribute<T>._(key, scope, value);
-
-  @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    if (other is! NotusAttribute<T>) return false;
-    NotusAttribute<T> typedOther = other;
+    if (other is! NotusAttribute) return false;
+    NotusAttribute typedOther = other;
     return key == typedOther.key &&
         scope == typedOther.scope &&
         value == typedOther.value;
@@ -187,6 +162,26 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   String toString() => '$key: $value';
 
   Map<String, dynamic> toJson() => <String, dynamic>{key: value};
+}
+
+// TODO make NotusAttributes an instance so we can customize it from outside notus
+class NotusAttributes {
+  static final Map<String, NotusAttributeBase> _registry = {
+    for (NotusAttributeKey a in [
+      NotusAttribute.bold,
+      NotusAttribute.italic,
+      NotusAttribute.link,
+      NotusAttribute.heading,
+      NotusAttribute.ul,
+      NotusAttribute.ol,
+      NotusAttribute.bq,
+      NotusAttribute.code
+    ])
+      a.key: a
+  };
+
+  static bool contains(String key) => _registry.containsKey(key);
+  static bool isLineScoped(String key) => _registry[key]?.isLineScoped ?? false;
 }
 
 /// Collection of style attributes.
@@ -214,7 +209,7 @@ class NotusStyle {
   bool get isNotEmpty => _data.isNotEmpty;
 
   /// Returns `true` if this style is not empty and contains only inline-scoped
-  /// attributes and is not empty.
+  /// attributes.
   bool get isInline => isNotEmpty && values.every((item) => item.isInline);
 
   /// Checks that this style has only one attribute, and returns that attribute.
@@ -236,11 +231,21 @@ class NotusStyle {
     return get<dynamic>(attribute) == attribute;
   }
 
-  /// Returns value of specified attribute [key] in this set.
-  T value<T>(NotusAttributeKey<T> key) => get(key).value;
+  bool hasLineStyle() => _data.values.any((a) => a.isLineScoped);
 
-  /// Returns [NotusAttribute] from this set by specified [key].
-  NotusAttribute<T> get<T>(NotusAttributeKey<T> key) =>
+  NotusAttribute lineStyle() =>
+      _data.values.firstWhere((a) => a.isLineScoped, orElse: () => null);
+
+  void unsetLineStyle() {
+    final ls = lineStyle();
+    if (ls != null) put(ls.unset);
+  }
+
+  /// Returns value of specified attribute [key] in this set.
+  T value<T>(NotusAttributeKey key) => get(key).value;
+
+  /// Returns [NotusAttribute] from this set by specified [key] or null if [key] is not set.
+  NotusAttribute<T> get<T>(NotusAttributeKey key) =>
       _data[key.key] as NotusAttribute<T>;
 
   /// Returns collection of all attribute keys in this set.
@@ -252,6 +257,11 @@ class NotusStyle {
   /// Puts [attribute] into this attribute set and returns result as a new set.
   NotusStyle put(NotusAttribute attribute) {
     final result = Map<String, NotusAttribute>.from(_data);
+
+    if (attribute.isLineScoped) {
+      result.removeWhere((key, value) => value.isLineScoped);
+    }
+
     result[attribute.key] = attribute;
     return NotusStyle._(result);
   }
@@ -317,69 +327,25 @@ class NotusStyle {
   String toString() => "{${_data.values.join(', ')}}";
 }
 
-/// Applies bold style to a text segment.
-class _BoldAttribute extends NotusAttribute<bool> {
-  const _BoldAttribute() : super._('b', NotusAttributeScope.inline, true);
-}
-
-/// Applies italic style to a text segment.
-class _ItalicAttribute extends NotusAttribute<bool> {
-  const _ItalicAttribute() : super._('i', NotusAttributeScope.inline, true);
-}
-
 /// Builder for link attribute values.
 ///
 /// There is no need to use this class directly, consider using
 /// [NotusAttribute.link] instead.
-class LinkAttributeBuilder extends NotusAttributeBuilder<String> {
-  static const _kLink = 'a';
-  const LinkAttributeBuilder._() : super._(_kLink, NotusAttributeScope.inline);
+class LinkAttributeBuilder extends NotusAttributeBase<String> {
+  static const _kLink = 'link';
+  const LinkAttributeBuilder._() : super(_kLink, NotusAttributeScope.inline);
 
   /// Creates a link attribute with specified link [value].
   NotusAttribute<String> fromString(String value) =>
-      NotusAttribute<String>._(key, scope, value);
+      NotusAttribute<String>(key, scope, value);
 }
 
 /// Builder for heading attribute styles.
 ///
 /// There is no need to use this class directly, consider using
 /// [NotusAttribute.heading] instead.
-class HeadingAttributeBuilder extends NotusAttributeBuilder<int> {
-  static const _kHeading = 'heading';
+class HeadingAttributeBuilder extends NotusAttributeBase<int> {
+  static const _kHeading = 'header';
   const HeadingAttributeBuilder._()
-      : super._(_kHeading, NotusAttributeScope.line);
-
-  /// Level 1 heading, equivalent of `H1` in HTML.
-  NotusAttribute<int> get level1 => NotusAttribute<int>._(key, scope, 1);
-
-  /// Level 2 heading, equivalent of `H2` in HTML.
-  NotusAttribute<int> get level2 => NotusAttribute<int>._(key, scope, 2);
-
-  /// Level 3 heading, equivalent of `H3` in HTML.
-  NotusAttribute<int> get level3 => NotusAttribute<int>._(key, scope, 3);
-}
-
-/// Builder for block attribute styles (number/bullet lists, code and quote).
-///
-/// There is no need to use this class directly, consider using
-/// [NotusAttribute.block] instead.
-class BlockAttributeBuilder extends NotusAttributeBuilder<String> {
-  static const _kBlock = 'block';
-  const BlockAttributeBuilder._() : super._(_kBlock, NotusAttributeScope.line);
-
-  /// Formats a block of lines as a bullet list.
-  NotusAttribute<String> get bulletList =>
-      NotusAttribute<String>._(key, scope, 'ul');
-
-  /// Formats a block of lines as a number list.
-  NotusAttribute<String> get numberList =>
-      NotusAttribute<String>._(key, scope, 'ol');
-
-  /// Formats a block of lines as a code snippet, using monospace font.
-  NotusAttribute<String> get code =>
-      NotusAttribute<String>._(key, scope, 'code');
-
-  /// Formats a block of lines as a quote.
-  NotusAttribute<String> get quote =>
-      NotusAttribute<String>._(key, scope, 'quote');
+      : super(_kHeading, NotusAttributeScope.line);
 }

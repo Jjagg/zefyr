@@ -71,7 +71,7 @@ class ResolveLineFormatRule extends FormatRule {
   }
 }
 
-/// Produces Delta with inline-level attributes applied too all characters
+/// Produces Delta with inline-level attributes applied to all characters
 /// except line-breaks.
 class ResolveInlineFormatRule extends FormatRule {
   const ResolveInlineFormatRule();

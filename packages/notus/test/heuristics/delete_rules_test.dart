@@ -27,7 +27,7 @@ void main() {
     });
 
     test('resets block style', () {
-      final unsetUl = NotusAttribute.block.unset.toJson();
+      final unsetUl = NotusAttribute.ul.unset.toJson();
       final doc = Delta()
         ..insert('Title\nOne')
         ..insert('\n', NotusAttribute.ul.toJson())

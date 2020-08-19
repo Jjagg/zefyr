@@ -100,8 +100,11 @@ class NotusDocument {
   ///
   /// Returns an instance of [Delta] actually composed into this document.
   Delta insert(int index, String text) {
-    assert(index >= 0);
-    assert(text.isNotEmpty);
+    _validateIndex(index);
+    if (text == null || text.isEmpty) {
+      throw ArgumentError.value(text, 'text', 'Text may not be empty.');
+    }
+
     text = _sanitizeString(text);
     if (text.isEmpty) return Delta();
     final change = _heuristics.applyInsertRules(this, index, text);
@@ -116,7 +119,8 @@ class NotusDocument {
   ///
   /// Returns an instance of [Delta] actually composed into this document.
   Delta delete(int index, int length) {
-    assert(index >= 0 && length > 0);
+    _validateIndex(index);
+    _validateLength(length);
     // TODO: need a heuristic rule to ensure last line-break.
     final change = _heuristics.applyDeleteRules(this, index, length);
     if (change.isNotEmpty) {
@@ -133,20 +137,41 @@ class NotusDocument {
   ///
   /// Returns an instance of [Delta] actually composed into this document.
   Delta replace(int index, int length, String text) {
-    assert(index >= 0 && (text.isNotEmpty || length > 0),
-        'With index $index, length $length and text "$text"');
-    var delta = Delta();
-    // We have to compose before applying delete rules
-    // Otherwise delete would be operating on stale document snapshot.
-    if (text.isNotEmpty) {
-      delta = insert(index + length, text);
+    _validateIndex(index);
+    _validateLength(length);
+
+    if (text == null || text.isEmpty) {
+      if (length == 0) {
+        throw ArgumentError(
+            'Either length must be larger than 0 or text must be non-empty.');
+      }
+      return delete(index, length);
     }
 
-    if (length > 0) {
-      final deleteDelta = delete(index, length);
-      delta = delta.compose(deleteDelta);
+    if (length == 0) {
+      return insert(index, text);
     }
-    return delta;
+
+    // We have to compose before applying delete rules
+    // Otherwise delete would be operating on stale document snapshot.
+    final insertDelta = insert(index + length, text);
+    final deleteDelta = delete(index, length);
+
+    return insertDelta.compose(deleteDelta);
+  }
+
+  void _validateIndex(int index) {
+    if (index == null || index < 0) {
+      throw ArgumentError.value(
+          index, 'index', 'Index should be larger than or equal to zero.');
+    }
+  }
+
+  void _validateLength(int length) {
+    if (length <= 0) {
+      throw ArgumentError.value(
+          length, 'length', 'Length must be larger than zero');
+    }
   }
 
   /// Formats segment of this document with specified [attribute].
@@ -158,6 +183,8 @@ class NotusDocument {
   /// The returned [Delta] may be empty in which case this document remains
   /// unchanged and no [NotusChange] is published to [changes] stream.
   Delta format(int index, int length, NotusAttribute attribute) {
+    _validateIndex(index);
+    _validateLength(length);
     assert(index >= 0 && length >= 0 && attribute != null);
 
     var change = Delta();
