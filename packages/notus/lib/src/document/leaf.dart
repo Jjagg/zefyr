@@ -24,10 +24,9 @@ abstract class LeafNode extends Node
       // Zero-width space is reserved for embed nodes.
       node = EmbedNode();
     } else {
-      assert(
-          !value.contains(kZeroWidthSpace),
-          'Zero-width space is reserved for embed leaf nodes and cannot be used '
-          'inside regular text nodes.');
+      // Zero-width space is reserved for embed leaf nodes and cannot be used
+      // inside regular text nodes.
+      value = value.replaceAll(kZeroWidthSpace, '');
       node = TextNode(value);
     }
     return node;

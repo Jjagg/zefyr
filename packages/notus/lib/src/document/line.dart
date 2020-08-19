@@ -296,7 +296,8 @@ class LineNode extends ContainerNode<LeafNode>
     applyStyle(newStyle);
     final lineStyle = newStyle.lineStyle();
     // TODO This logic should be the same for all line formatting
-    // Instead, formatting rules should determine if a block is created
+    // Formatting rules should determine if a block is created instead
+    // of making an exception for heading here
     if (lineStyle == null || lineStyle.key == NotusAttribute.heading.key) {
       return;
     } // no block-level changes

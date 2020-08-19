@@ -106,10 +106,24 @@ class NotusDocument {
     }
 
     text = _sanitizeString(text);
-    if (text.isEmpty) return Delta();
     final change = _heuristics.applyInsertRules(this, index, text);
     compose(change, ChangeSource.local);
     return change;
+  }
+
+  /// Insert an object in this document at the specified [index].
+  ///
+  /// This method applies heuristic rules before modifying this document and
+  /// produces a [NotusChange] with source set to [ChangeSource.local].
+  ///
+  /// Returns an instance of [Delta] actually composed into this document.
+  Delta insertObject(int index, String type, Object value) {
+    _validateIndex(index);
+    if (type == null || type.isEmpty) {
+      throw ArgumentError.value(type, 'type', 'Type may not be empty.');
+    }
+
+    final change = _heuristics.applyInsertObjectRules(this, index, type, value);
   }
 
   /// Deletes [length] of characters from this document starting at [index].

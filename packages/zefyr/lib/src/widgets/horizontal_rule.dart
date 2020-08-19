@@ -23,7 +23,7 @@ class ZefyrHorizontalRule extends LeafRenderObjectWidget {
   @override
   void updateRenderObject(
       BuildContext context, RenderHorizontalRule renderObject) {
-    renderObject..node = node;
+    renderObject.node = node;
   }
 }
 

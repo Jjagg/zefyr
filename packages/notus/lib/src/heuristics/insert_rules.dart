@@ -15,6 +15,16 @@ abstract class InsertRule {
   Delta apply(Delta document, int index, String text);
 }
 
+/// A heuristic rule for insert object operations.
+abstract class InsertObjectRule {
+  /// Constant constructor allows subclasses to declare constant constructors.
+  const InsertObjectRule();
+
+  /// Applies heuristic rule to an insert object operation on a [document] and returns
+  /// resulting [Delta].
+  Delta apply(Delta document, int index, String type, Object value);
+}
+
 /// Fallback rule which simply inserts text as-is without any special handling.
 class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();

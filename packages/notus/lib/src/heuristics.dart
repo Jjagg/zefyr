@@ -41,6 +41,7 @@ class NotusHeuristics {
   const NotusHeuristics({
     this.formatRules,
     this.insertRules,
+    this.insertObjectRules,
     this.deleteRules,
   });
 
@@ -50,18 +51,32 @@ class NotusHeuristics {
   /// List of insert rules in this registry.
   final List<InsertRule> insertRules;
 
+  /// List of insert object rules in this registry.
+  final List<InsertObjectRule> insertObjectRules;
+
   /// List of delete rules in this registry.
   final List<DeleteRule> deleteRules;
 
   /// Applies heuristic rules to specified insert operation based on current
   /// state of Notus [document].
-  Delta applyInsertRules(NotusDocument document, int index, String insert) {
+  Delta applyInsertRules(NotusDocument document, int index, String text) {
     final delta = document.toDelta();
     for (var rule in insertRules) {
-      final result = rule.apply(delta, index, insert);
+      final result = rule.apply(delta, index, text);
       if (result != null) return result..trim();
     }
     throw StateError('Failed to apply insert heuristic rules: none applied.');
+  }
+
+  /// Applies heuristic rules to specified insert operation based on current
+  /// state of Notus [document].
+  Delta applyInsertObjectRules(NotusDocument document, int index, String type, Object value) {
+    final delta = document.toDelta();
+    for (var rule in insertObjectRules) {
+      final result = rule.apply(delta, index, type, value);
+      if (result != null) return result..trim();
+    }
+    throw StateError('Failed to apply insert object heuristic rules: none applied.');
   }
 
   /// Applies heuristic rules to specified format operation based on current
