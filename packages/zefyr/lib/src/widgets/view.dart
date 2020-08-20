@@ -6,7 +6,7 @@ import 'package:meta/meta.dart';
 import 'package:notus/notus.dart';
 
 import 'code.dart';
-import 'common.dart';
+import 'line.dart';
 import 'image.dart';
 import 'list.dart';
 import 'paragraph.dart';

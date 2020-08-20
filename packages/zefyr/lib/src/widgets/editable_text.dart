@@ -7,7 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:notus/notus.dart';
 
 import 'code.dart';
-import 'common.dart';
+import 'line.dart';
 import 'controller.dart';
 import 'cursor_timer.dart';
 import 'editor.dart';

@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:notus/notus.dart';
 
-import 'common.dart';
+import 'line.dart';
 import 'theme.dart';
 
 /// Represents regular paragraph line in a Zefyr editor.

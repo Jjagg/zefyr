@@ -4,7 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:notus/notus.dart';
 
-import 'common.dart';
+import 'line.dart';
 import 'theme.dart';
 
 /// Represents a code snippet in Zefyr editor.

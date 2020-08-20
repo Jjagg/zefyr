@@ -11,7 +11,7 @@ export 'package:notus/notus.dart';
 
 export 'src/widgets/buttons.dart' hide HeadingButton, LinkButton;
 export 'src/widgets/code.dart';
-export 'src/widgets/common.dart';
+export 'src/widgets/line.dart';
 export 'src/widgets/controller.dart';
 export 'src/widgets/editable_text.dart';
 export 'src/widgets/editor.dart';
