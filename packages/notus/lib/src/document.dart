@@ -72,8 +72,12 @@ class NotusDocument {
   final StreamController<NotusChange> _controller =
       StreamController.broadcast();
 
-  /// Returns contents of this document as [Delta].
-  Delta toDelta() => Delta.from(_delta);
+  /// Returns a copy of the document's [Delta].
+  Delta copyDelta() => Delta.from(_delta);
+
+  /// Return the [Delta] of this document, wrapped in an
+  /// [UnmodifiableDeltaView].
+  Delta get delta => UnmodifiableDeltaView(_delta);
   Delta _delta;
 
   /// Returns plain text representation of this document.
@@ -106,6 +110,7 @@ class NotusDocument {
     }
 
     text = _sanitizeString(text);
+    if (text.isEmpty) return Delta();
     final change = _heuristics.applyInsertRules(this, index, text);
     compose(change, ChangeSource.local);
     return change;
@@ -124,6 +129,8 @@ class NotusDocument {
     }
 
     final change = _heuristics.applyInsertObjectRules(this, index, type, value);
+    compose(change, ChangeSource.local);
+    return change;
   }
 
   /// Deletes [length] of characters from this document starting at [index].
@@ -135,6 +142,9 @@ class NotusDocument {
   Delta delete(int index, int length) {
     _validateIndex(index);
     _validateLength(length);
+
+    if (length == 0) return Delta();
+
     // TODO: need a heuristic rule to ensure last line-break.
     final change = _heuristics.applyDeleteRules(this, index, length);
     if (change.isNotEmpty) {
@@ -182,9 +192,9 @@ class NotusDocument {
   }
 
   void _validateLength(int length) {
-    if (length <= 0) {
+    if (length < 0) {
       throw ArgumentError.value(
-          length, 'length', 'Length must be larger than zero');
+          length, 'length', 'Length must be larger than or equal to zero.');
     }
   }
 
@@ -199,7 +209,11 @@ class NotusDocument {
   Delta format(int index, int length, NotusAttribute attribute) {
     _validateIndex(index);
     _validateLength(length);
-    assert(index >= 0 && length >= 0 && attribute != null);
+
+    if (attribute == null) {
+      throw ArgumentError.value(
+          attribute, 'attribute', 'Attribute may not be null.');
+    }
 
     var change = Delta();
 
@@ -251,10 +265,11 @@ class NotusDocument {
   void compose(Delta change, ChangeSource source) {
     _checkMutable();
     change.trim();
+
     assert(change.isNotEmpty);
 
     var offset = 0;
-    final before = toDelta();
+    final before = copyDelta();
     for (final op in change.operations) {
       final attributes =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;

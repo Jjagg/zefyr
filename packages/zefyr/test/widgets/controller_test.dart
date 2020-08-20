@@ -41,7 +41,7 @@ void main() {
       controller.compose(change, selection: selection);
       expect(notified, isTrue);
       expect(controller.selection, selection);
-      expect(controller.document.toDelta(), Delta()..insert('Words\n'));
+      expect(controller.document.copyDelta(), Delta()..insert('Words\n'));
       expect(controller.lastChangeSource, ChangeSource.remote);
     });
 
@@ -58,7 +58,7 @@ void main() {
       expect(notified, isTrue);
       var expectedSelection = TextSelection.collapsed(offset: 10);
       expect(controller.selection, expectedSelection);
-      expect(controller.document.toDelta(), Delta()..insert('More Words\n'));
+      expect(controller.document.copyDelta(), Delta()..insert('More Words\n'));
       expect(controller.lastChangeSource, ChangeSource.remote);
     });
 
@@ -71,7 +71,7 @@ void main() {
       controller.replaceText(0, 0, 'Words', selection: selection);
       expect(notified, isTrue);
       expect(controller.selection, selection);
-      expect(controller.document.toDelta(), Delta()..insert('Words\n'));
+      expect(controller.document.copyDelta(), Delta()..insert('Words\n'));
       expect(controller.lastChangeSource, ChangeSource.local);
     });
 
@@ -84,7 +84,7 @@ void main() {
       controller.formatText(0, 5, NotusAttribute.bold);
       expect(notified, isTrue);
       expect(
-        controller.document.toDelta(),
+        controller.document.copyDelta(),
         Delta()..insert('Words', NotusAttribute.bold.toJson())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);
@@ -105,7 +105,7 @@ void main() {
       expect(notified, isTrue);
 
       expect(
-        controller.document.toDelta(),
+        controller.document.copyDelta(),
         Delta()
           ..insert('Won')
           ..insert('B', NotusAttribute.bold.toJson())
@@ -128,7 +128,7 @@ void main() {
 
       expect(notified, isTrue);
       expect(
-        controller.document.toDelta(),
+        controller.document.copyDelta(),
         Delta()
           ..insert('W')
           ..insert('B', NotusAttribute.bold.toJson())
@@ -148,7 +148,7 @@ void main() {
       controller.formatSelection(NotusAttribute.bold);
       expect(notified, isTrue);
       expect(
-        controller.document.toDelta(),
+        controller.document.copyDelta(),
         Delta()..insert('Words', NotusAttribute.bold.toJson())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);
@@ -181,7 +181,7 @@ void main() {
       controller.replaceText(0, 0, 'Word');
       expect(notified, isTrue);
       expect(
-        controller.document.toDelta(),
+        controller.document.copyDelta(),
         Delta()..insert('Word', NotusAttribute.bold.toJson())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);

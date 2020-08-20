@@ -38,7 +38,7 @@ void main() {
       final original = dartconfDoc();
       final jsonData = json.encode(original);
       final doc = NotusDocument.fromJson(json.decode(jsonData) as List);
-      expect(doc.toDelta(), original.toDelta());
+      expect(doc.copyDelta(), original.copyDelta());
       expect(json.encode(doc), jsonData);
     });
 
@@ -112,7 +112,7 @@ void main() {
         ..insert('\n', ul)
         ..insert('Los Angeles')
         ..insert('\n', ul);
-      expect(doc.toDelta(), expectedDoc);
+      expect(doc.copyDelta(), expectedDoc);
     });
 
     test('format allows zero-length updates', () {
@@ -123,7 +123,7 @@ void main() {
         ..insert('\n', ul)
         ..insert('Los Angeles')
         ..insert('\n');
-      expect(doc.toDelta(), expectedDoc);
+      expect(doc.copyDelta(), expectedDoc);
     });
 
     test('insert applies heuristics', () {
@@ -153,21 +153,21 @@ void main() {
         ..insert('\n\n', ul)
         ..insert('Los Angeles')
         ..insert('\n', ul);
-      expect(doc.toDelta(), expectedDoc);
+      expect(doc.copyDelta(), expectedDoc);
     });
 
-    test('insert throws assert error if change is empty', () {
+    test('insert throws argument error if change is empty', () {
       final doc = dartconfDoc();
       expect(() {
         doc.insert(8, '');
-      }, throwsA(const TypeMatcher<AssertionError>()));
+      }, throwsArgumentError);
     });
 
-    test('replace throws assert error if change is empty', () {
+    test('replace throws argument error if change is empty', () {
       final doc = dartconfDoc();
       expect(() {
         doc.replace(8, 0, '');
-      }, throwsA(const TypeMatcher<AssertionError>()));
+      }, throwsArgumentError);
     });
 
     test('compose throws assert error if change is empty', () {
