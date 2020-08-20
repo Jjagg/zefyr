@@ -7,6 +7,7 @@ import 'package:meta/meta.dart';
 import 'package:quill_delta/quill_delta.dart';
 
 import 'attributes.dart';
+import 'embed.dart';
 import 'line.dart';
 
 /// An abstract node in a document tree.
@@ -78,6 +79,10 @@ abstract class Node extends LinkedListEntry<Node> {
 
   /// Insert [text] at specified character [index] with style [style].
   void insert(int index, String text, NotusStyle style);
+
+  /// Insert embed of given [type] with given [value] at specified character
+  /// [index] with style [style].
+  void insertObject(int index, EmbedType type, Object value, NotusStyle style);
 
   /// Format [length] characters of this node starting from [index] with
   /// specified style [style].
@@ -244,6 +249,21 @@ abstract class ContainerNode<T extends Node> extends Node {
     } else {
       final result = lookup(index);
       result.node.insert(result.offset, value, style);
+    }
+  }
+
+  @override
+  void insertObject(int index, EmbedType type, Object value, NotusStyle style) {
+    assert(index == 0 || (index > 0 && index < length));
+
+    if (isEmpty) {
+      assert(index == 0);
+      final node = defaultChild;
+      add(node);
+      node.insertObject(index, type, value, style);
+    } else {
+      final result = lookup(index);
+      result.node.insertObject(result.offset, type, value, style);
     }
   }
 

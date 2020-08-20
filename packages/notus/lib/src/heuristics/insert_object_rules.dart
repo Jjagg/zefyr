@@ -9,6 +9,6 @@ class CatchAllInsertObjectRule extends InsertObjectRule {
   Delta apply(Delta document, int index, String type, Object value) {
     return Delta()
       ..retain(index)
-      ..insertObj(type, value);
+      ..insertObject(type, value);
   }
 }

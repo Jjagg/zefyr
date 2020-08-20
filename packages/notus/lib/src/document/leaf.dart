@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:quill_delta/quill_delta.dart';
 
 import 'attributes.dart';
+import 'embed.dart';
 import 'line.dart';
 import 'node.dart';
 
@@ -18,18 +19,15 @@ abstract class LeafNode extends Node
       : assert(value != null && !value.contains('\n')),
         _value = value;
 
-  factory LeafNode([String value = '']) {
-    LeafNode node;
-    if (value == kZeroWidthSpace) {
-      // Zero-width space is reserved for embed nodes.
-      node = EmbedNode();
-    } else {
-      // Zero-width space is reserved for embed leaf nodes and cannot be used
-      // inside regular text nodes.
-      value = value.replaceAll(kZeroWidthSpace, '');
-      node = TextNode(value);
-    }
-    return node;
+  factory LeafNode.text([String value = '']) {
+    // Zero-width space is reserved for embed leaf nodes and cannot be used
+    // inside regular text nodes.
+    value = value.replaceAll(kZeroWidthSpace, '');
+    return TextNode(value);
+  }
+
+  factory LeafNode.embed(EmbedType type, Object value) {
+    return EmbedNode(type, value);
   }
 
   /// Plain-text value of this node.
@@ -53,9 +51,12 @@ abstract class LeafNode extends Node
     if (index == length && isLast) return null;
     if (index == length && !isLast) return next as LeafNode;
 
+    // Length of EmbedNode is always 1 so we shouldn't be able to get here.
+    assert(this is! EmbedNode);
+
     final text = _value;
     _value = text.substring(0, index);
-    final split = LeafNode(text.substring(index));
+    final split = LeafNode.text(text.substring(index));
     split.applyStyle(style);
     insertAfter(split);
     return split;
@@ -115,18 +116,29 @@ abstract class LeafNode extends Node
   int get length => _value.length;
 
   @override
-  Delta toDelta() {
-    return Delta()..insert(_value, style.toJson());
-  }
-
-  @override
-  String toPlainText() => _value;
-
-  @override
   void insert(int index, String value, NotusStyle style) {
     assert(index >= 0 && (index <= length), 'Index: $index, Length: $length.');
     assert(value.isNotEmpty);
-    final node = LeafNode(value);
+    final node = LeafNode.text(value);
+    if (index == length) {
+      insertAfter(node);
+    } else {
+      splitAt(index).insertBefore(node);
+    }
+    node.formatAndOptimize(style);
+  }
+
+  @override
+  void insertObject(int index, EmbedType type, Object value, NotusStyle style) {
+    assert(index >= 0 && (index <= length), 'Index: $index, Length: $length.');
+    assert(type != null);
+
+    if (type.placement == EmbedPlacement.line) {
+      throw ArgumentError(
+          'Line-placed embeds cannot be inserted into leaf nodes.');
+    }
+
+    final node = LeafNode.embed(type, value);
     if (index == length) {
       insertAfter(node);
     } else {
@@ -170,13 +182,29 @@ abstract class LeafNode extends Node
 
     if (needsOptimize != null) needsOptimize.optimize();
   }
+}
+
+/// A span of formatted text within a line in a Notus document.
+///
+/// TextNode is a leaf node of a document tree.
+///
+/// Parent of a text node is always a [LineNode], and as a consequence text
+/// node's [value] cannot contain any line-break characters.
+///
+/// See also:
+///
+///   * [LineNode], a node representing a line of text.
+///   * [BlockNode], a node representing a group of lines.
+class TextNode extends LeafNode {
+  TextNode([String content = '']) : super._(content);
 
   @override
-  String toString() {
-    final keys = style.keys.toList(growable: false)..sort();
-    final styleKeys = keys.join();
-    return '⟨$value⟩$styleKeys';
+  Delta toDelta() {
+    return Delta()..insert(_value, style.toJson());
   }
+
+  @override
+  String toPlainText() => _value;
 
   /// Optimizes this text node by merging it with adjacent nodes if they share
   /// the same style.
@@ -199,21 +227,13 @@ abstract class LeafNode extends Node
       }
     }
   }
-}
 
-/// A span of formatted text within a line in a Notus document.
-///
-/// TextNode is a leaf node of a document tree.
-///
-/// Parent of a text node is always a [LineNode], and as a consequence text
-/// node's [value] cannot contain any line-break characters.
-///
-/// See also:
-///
-///   * [LineNode], a node representing a line of text.
-///   * [BlockNode], a node representing a group of lines.
-class TextNode extends LeafNode {
-  TextNode([String content = '']) : super._(content);
+  @override
+  String toString() {
+    final keys = style.keys.toList(growable: false)..sort();
+    final styleKeys = keys.join();
+    return '⟨$value⟩$styleKeys';
+  }
 }
 
 final kZeroWidthSpace = String.fromCharCode(0x200b);
@@ -235,5 +255,29 @@ final kZeroWidthSpace = String.fromCharCode(0x200b);
 class EmbedNode extends LeafNode {
   static final kPlainTextPlaceholder = String.fromCharCode(0x200b);
 
-  EmbedNode() : super._(kPlainTextPlaceholder);
+  /// The type of the embed insert.
+  final EmbedType type;
+
+  /// The object
+  final Object object;
+
+  EmbedNode(this.type, this.object) : super._(kPlainTextPlaceholder);
+
+  @override
+  Delta toDelta() {
+    return Delta()..insertObject(type.key, object, style.toJson());
+  }
+
+  @override
+  String toPlainText() => '';
+
+  @override
+  void optimize() {}
+
+  @override
+  String toString() {
+    final keys = style.keys.toList(growable: false)..sort();
+    final styleKeys = keys.join();
+    return '⟨${type.key}: ${type.stringify(object)}⟩$styleKeys';
+  }
 }

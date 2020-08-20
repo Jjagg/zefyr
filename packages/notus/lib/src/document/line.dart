@@ -9,25 +9,23 @@ import 'attributes.dart';
 import 'block.dart';
 import 'leaf.dart';
 import 'node.dart';
+import 'embed.dart';
 
 /// A line of rich text in a Notus document.
 ///
 /// LineNode serves as a container for [LeafNode]s, like [TextNode] and
 /// [EmbedNode].
 ///
-/// When a line contains an embed, it fully occupies the line, no other embeds
-/// or text nodes are allowed.
+/// When a line contains an embed with placement [EmbedPlacement.line], it fully
+/// occupies the line, no other embeds or text nodes are allowed.
 class LineNode extends ContainerNode<LeafNode>
     with StyledNodeMixin
     implements StyledNode {
-  /// Returns `true` if this line contains an embed.
-  bool get hasEmbed {
-    if (childCount == 1) {
-      return children.single is EmbedNode;
-    }
-    assert(children.every((child) => child is TextNode));
-    return false;
-  }
+
+  /// Returns `true` if this line contains an [EmbedNode] with placement
+  /// [EmbedPlacement.line].
+  bool get hasLineEmbed => children.any((child) =>
+      child is EmbedNode && child.type.placement == EmbedPlacement.line);
 
   /// Returns next [LineNode] or `null` if this is the last line in the document.
   LineNode get nextLine {
@@ -218,6 +216,23 @@ class LineNode extends ContainerNode<LeafNode>
   }
 
   @override
+  void insertObject(int index, EmbedType type, Object value, NotusStyle style) {
+    if (isEmpty) {
+      final child = LeafNode.embed(type, value);
+      add(child);
+      child.formatAndOptimize(style);
+      return;
+    }
+
+    if (type.placement == EmbedPlacement.line) {
+      throw StateError('Cannot insert non-inline embed in non-empty LineNode.');
+    }
+
+    final result = lookup(index, inclusive: true);
+    result.node.insertObject(result.offset, type, value, style);
+  }
+
+  @override
   void retain(int index, int length, NotusStyle style) {
     if (style == null) return;
     final thisLength = this.length;
@@ -328,7 +343,7 @@ class LineNode extends ContainerNode<LeafNode>
     if (text.isEmpty) return;
 
     if (isEmpty) {
-      final child = LeafNode(text);
+      final child = LeafNode.text(text);
       add(child);
       child.formatAndOptimize(style);
     } else {

@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'package:notus/notus.dart';
+import 'package:notus/src/document/embed.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:test/test.dart';
 
@@ -28,9 +29,9 @@ void main() {
 
     test('hasEmbed', () {
       final node = LineNode();
-      expect(node.hasEmbed, isFalse);
-      node.add(EmbedNode());
-      expect(node.hasEmbed, isTrue);
+      expect(node.hasLineEmbed, isFalse);
+      node.add(EmbedNode(EmbedType(EmbedPlacement.line, 'test'), null));
+      expect(node.hasLineEmbed, isTrue);
     });
 
     test('nextLine', () {
@@ -67,63 +68,101 @@ void main() {
       expect(newLine.toPlainText(), ' is a circus\n');
     });
 
-    test('insert into empty line', () {
-      final node = LineNode();
-      node.insert(0, 'London "Grammar" - Hey Now', null);
-      expect(node, hasLength(27));
-      expect(node.toDelta(), Delta()..insert('London "Grammar" - Hey Now\n'));
+    group('insert text', () {
+      test('insert into empty line', () {
+        final node = LineNode();
+        node.insert(0, 'London "Grammar" - Hey Now', null);
+        expect(node, hasLength(27));
+        expect(node.toDelta(), Delta()..insert('London "Grammar" - Hey Now\n'));
+      });
+
+      test('insert into empty line with styles', () {
+        final node = LineNode();
+        node.insert(0, 'London "Grammar" - Hey Now', null);
+        node.retain(0, 16, boldStyle);
+        node.applyAttribute(NotusAttribute.h1);
+        expect(node, hasLength(27));
+        expect(node.childCount, 2);
+
+        final delta = Delta()
+          ..insert('London "Grammar"', boldStyle.toJson())
+          ..insert(' - Hey Now')
+          ..insert('\n', NotusAttribute.h1.toJson());
+        expect(node.toDelta(), delta);
+      });
+
+      test('insert into non-empty line', () {
+        final node = LineNode();
+        node.insert(0, 'Hello world', null);
+        node.insert(11, '!!!', null);
+        expect(node, hasLength(15));
+        expect(node.childCount, 1);
+        expect(node.toDelta(), Delta()..insert('Hello world!!!\n'));
+      });
+
+      test('insert text with line-break at the end of line', () {
+        root.insert(0, 'Hello world', null);
+        root.insert(11, '!!!\n', null);
+        expect(root.childCount, 2);
+
+        LineNode line = root.first;
+        expect(line, hasLength(15));
+        expect(line.toDelta(), Delta()..insert('Hello world!!!\n'));
+
+        LineNode line2 = root.last;
+        expect(line2, hasLength(1));
+        expect(line2.toDelta(), Delta()..insert('\n'));
+      });
+
+      test('insert into second text segment', () {
+        root.insert(0, 'Hello world', null);
+        root.retain(6, 5, boldStyle);
+        root.insert(11, '!!!', null);
+
+        LineNode line = root.first;
+        expect(line, hasLength(15));
+        final delta = Delta()
+          ..insert('Hello ')
+          ..insert('world', boldStyle.toJson())
+          ..insert('!!!\n');
+        expect(line.toDelta(), delta);
+      });
     });
 
-    test('insert into empty line with styles', () {
-      final node = LineNode();
-      node.insert(0, 'London "Grammar" - Hey Now', null);
-      node.retain(0, 16, boldStyle);
-      node.applyAttribute(NotusAttribute.h1);
-      expect(node, hasLength(27));
-      expect(node.childCount, 2);
+    group('insert embed', () {
+      final lineEmbedType = EmbedType(EmbedPlacement.line, 'test');
 
-      final delta = Delta()
-        ..insert('London "Grammar"', boldStyle.toJson())
-        ..insert(' - Hey Now')
-        ..insert('\n', NotusAttribute.h1.toJson());
-      expect(node.toDelta(), delta);
-    });
+      test('insert into empty line', () {
+        final node = LineNode();
+        node.insertObject(0, lineEmbedType, null, null);
+        expect(node, hasLength(1 + 1));
+        expect(
+            node.toDelta(),
+            Delta()
+              ..insertObject(lineEmbedType.key, null)
+              ..insert('\n'));
+      });
 
-    test('insert into non-empty line', () {
-      final node = LineNode();
-      node.insert(0, 'Hello world', null);
-      node.insert(11, '!!!', null);
-      expect(node, hasLength(15));
-      expect(node.childCount, 1);
-      expect(node.toDelta(), Delta()..insert('Hello world!!!\n'));
-    });
+      test('insert into empty line with styles', () {
+        final node = LineNode();
+        node.insertObject(0, lineEmbedType, null, null);
+        node.retain(0, 1, boldStyle);
+        node.applyAttribute(NotusAttribute.h1);
+        expect(node, hasLength(2));
+        expect(node.childCount, 1);
 
-    test('insert text with line-break at the end of line', () {
-      root.insert(0, 'Hello world', null);
-      root.insert(11, '!!!\n', null);
-      expect(root.childCount, 2);
+        final delta = Delta()
+          ..insertObject(lineEmbedType.key, null, boldStyle.toJson())
+          ..insert('\n', NotusAttribute.h1.toJson());
+        expect(node.toDelta(), delta);
+      });
 
-      LineNode line = root.first;
-      expect(line, hasLength(15));
-      expect(line.toDelta(), Delta()..insert('Hello world!!!\n'));
-
-      LineNode line2 = root.last;
-      expect(line2, hasLength(1));
-      expect(line2.toDelta(), Delta()..insert('\n'));
-    });
-
-    test('insert into second text segment', () {
-      root.insert(0, 'Hello world', null);
-      root.retain(6, 5, boldStyle);
-      root.insert(11, '!!!', null);
-
-      LineNode line = root.first;
-      expect(line, hasLength(15));
-      final delta = Delta()
-        ..insert('Hello ')
-        ..insert('world', boldStyle.toJson())
-        ..insert('!!!\n');
-      expect(line.toDelta(), delta);
+      test('insert into non-empty line', () {
+        final node = LineNode();
+        node.insert(0, 'Hello world', null);
+        expect(() => node.insertObject(11, lineEmbedType, null, null),
+            throwsStateError);
+      });
     });
 
     test('format line', () {
