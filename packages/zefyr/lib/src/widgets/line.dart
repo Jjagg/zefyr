@@ -8,8 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'package:notus/notus.dart';
 
 import 'editable_box.dart';
-import 'horizontal_rule.dart';
-import 'image.dart';
 import 'rich_text.dart';
 import 'scope.dart';
 import 'theme.dart';
@@ -46,11 +44,15 @@ class _ZefyrLineState extends State<ZefyrLine> {
     final theme = Theme.of(context);
 
     Widget content;
-    assert(widget.style != null);
-    content = ZefyrRichText(
-      node: widget.node,
-      text: buildText(context),
-    );
+    if (widget.node.hasLineEmbed) {
+      content = buildEmbed(context, scope);
+    } else {
+      assert(widget.style != null);
+      content = ZefyrRichText(
+        node: widget.node,
+        text: buildText(context),
+      );
+    }
 
     if (scope.isEditable) {
       Color cursorColor;
@@ -145,5 +147,11 @@ class _ZefyrLineState extends State<ZefyrLine> {
       result = result.merge(theme.attributeTheme.link);
     }
     return result;
+  }
+
+  Widget buildEmbed(BuildContext context, ZefyrScope scope) {
+    final node = widget.node.children.first as EmbedNode;
+    final embed = scope.embedMap.get(node.type.key);
+    return embed.builder(scope, context, node);
   }
 }

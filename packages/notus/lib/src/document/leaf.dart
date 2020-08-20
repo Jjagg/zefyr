@@ -278,6 +278,6 @@ class EmbedNode extends LeafNode {
   String toString() {
     final keys = style.keys.toList(growable: false)..sort();
     final styleKeys = keys.join();
-    return '⟨${type.key}: ${type.stringify(object)}⟩$styleKeys';
+    return '⟨${type.stringify(object)}⟩$styleKeys';
   }
 }

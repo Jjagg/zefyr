@@ -235,6 +235,21 @@ class _HeadingButtonState extends State<HeadingButton> {
   }
 }
 
+class HorizontalRuleButton extends StatelessWidget {
+  const HorizontalRuleButton({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final toolbar = ZefyrToolbar.of(context);
+    return toolbar.buildButton(
+      context,
+      ZefyrToolbarAction.horizontalRule,
+      onPressed: () =>
+          toolbar.editor.replaceSelectionWithObject('hr', null, null),
+    );
+  }
+}
+
 /// Controls image attribute.
 ///
 /// When pressed, this button displays overlay toolbar with three
@@ -281,7 +296,7 @@ class _ImageButtonState extends State<ImageButton> {
     final image =
         await editor.imageDelegate.pickImage(editor.imageDelegate.cameraSource);
     if (image != null) {
-      //editor.formatSelection(NotusAttribute.embed.image(image));
+      editor.replaceSelectionWithObject('image', image, null);
     }
   }
 
@@ -290,7 +305,7 @@ class _ImageButtonState extends State<ImageButton> {
     final image = await editor.imageDelegate
         .pickImage(editor.imageDelegate.gallerySource);
     if (image != null) {
-      //editor.formatSelection(NotusAttribute.embed.image(image));
+      editor.replaceSelectionWithObject('image', image, null);
     }
   }
 }

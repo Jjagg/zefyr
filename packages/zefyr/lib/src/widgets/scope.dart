@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:notus/notus.dart';
+import 'package:zefyr/src/embed.dart';
 
 import 'controller.dart';
 import 'cursor_timer.dart';
@@ -28,6 +29,7 @@ class ZefyrScope extends ChangeNotifier {
   ZefyrScope.view({ZefyrImageDelegate imageDelegate})
       : isEditable = false,
         _mode = ZefyrMode.view,
+        embedMap = ZefyrEmbedMap.fallback,
         _imageDelegate = imageDelegate;
 
   /// Creates editable scope.
@@ -46,6 +48,7 @@ class ZefyrScope extends ChangeNotifier {
         isEditable = true,
         _mode = mode,
         _controller = controller,
+        embedMap = ZefyrEmbedMap.fallback,
         _imageDelegate = imageDelegate,
         _focusNode = focusNode,
         _focusScope = focusScope,
@@ -62,6 +65,8 @@ class ZefyrScope extends ChangeNotifier {
         context.dependOnInheritedWidgetOfExactType<ZefyrScopeAccess>();
     return widget.scope;
   }
+
+  final ZefyrEmbedMap embedMap;
 
   ZefyrImageDelegate _imageDelegate;
   ZefyrImageDelegate get imageDelegate => _imageDelegate;
@@ -179,6 +184,14 @@ class ZefyrScope extends ChangeNotifier {
     assert(isEditable);
     assert(!_disposed);
     _controller.formatSelection(value);
+  }
+
+  void replaceSelectionWithObject(String type, Object value, NotusStyle style) {
+    assert(isEditable);
+    assert(!_disposed);
+    assert(type != null);
+
+    _controller.replaceSelectionWithObject(type, value, style);
   }
 
   void focus() {

@@ -161,6 +161,22 @@ class ZefyrController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Deletes the current selection (if any) and inserts the specified object.
+  void replaceSelectionWithObject(String type, Object value, NotusStyle style) {
+    final index = _selection.start;
+    final length = _selection.end - index;
+    replaceTextWithObject(index, length, type, value, style);
+  }
+
+  void replaceTextWithObject(
+      int index, int length, String type, Object value, NotusStyle style) {
+    if (length > 0) replaceText(index, length, '');
+    final delta = Delta()
+      ..retain(index)
+      ..insertObject(type, value, style?.toJson());
+    document.compose(delta, ChangeSource.local);
+  }
+
   void formatText(int index, int length, NotusAttribute attribute) {
     final change = document.format(index, length, attribute);
     _lastChangeSource = ChangeSource.local;

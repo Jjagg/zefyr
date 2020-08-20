@@ -10,12 +10,15 @@ import '../testing.dart';
 void main() {
   group('$ZefyrHorizontalRule', () {
     testWidgets('format as horizontal rule', (tester) async {
-      final editor = EditorSandBox(tester: tester);
+      final editor = EditorSandBox(
+          tester: tester,
+          document: NotusDocument.fromDelta(delta,
+              embedTypes: EmbedTypeMap([hrEmbed.type])));
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.remove);
 
       LineNode line = editor.document.root.children.last;
-      expect(line.hasEmbed, isTrue);
+      expect(line.hasLineEmbed, isTrue);
     });
 
     testWidgets('tap left side of horizontal rule puts caret before it',

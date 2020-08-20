@@ -20,12 +20,10 @@ void main() {
       await editor.tapButtonWithIcon(Icons.photo);
       await editor.tapButtonWithIcon(Icons.photo_camera);
       LineNode line = editor.document.root.children.last;
-      expect(line.hasEmbed, isTrue);
-      //EmbedNode embed = line.children.single;
-      //expect(embed.style.value(NotusAttribute.embed), <String, dynamic>{
-      //  'type': 'image',
-      //  'source': 'file:///tmp/test.jpg',
-      //});
+      expect(line.hasLineEmbed, isTrue);
+      EmbedNode embed = line.children.single;
+      expect(embed.type, 'image');
+      expect(embed.value, 'file:///tmp/test.jpg');
       expect(find.byType(ZefyrImage), findsOneWidget);
     });
 

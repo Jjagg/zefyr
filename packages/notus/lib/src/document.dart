@@ -7,6 +7,7 @@ import 'package:quill_delta/quill_delta.dart';
 
 import 'document/attributes.dart';
 import 'document/block.dart';
+import 'document/embed.dart';
 import 'document/leaf.dart';
 import 'document/line.dart';
 import 'document/node.dart';
@@ -38,26 +39,36 @@ class NotusChange {
 /// A rich text document.
 class NotusDocument {
   /// Creates new empty Notus document.
-  NotusDocument()
-      : _heuristics = NotusHeuristics.fallback,
+  NotusDocument(
+      {this.heuristics = NotusHeuristics.fallback,
+      this.embedTypes = EmbedTypeMap.fallback})
+      : assert(heuristics != null),
+        assert(embedTypes != null),
         _delta = Delta()..insert('\n') {
     _loadDocument(_delta);
   }
 
-  NotusDocument.fromJson(List data)
-      : _heuristics = NotusHeuristics.fallback,
+  NotusDocument.fromJson(List data,
+      {this.heuristics = NotusHeuristics.fallback,
+      this.embedTypes = EmbedTypeMap.fallback})
+      : assert(heuristics != null),
+        assert(embedTypes != null),
         _delta = Delta.fromJson(data) {
     _loadDocument(_delta);
   }
 
-  NotusDocument.fromDelta(Delta delta)
+  NotusDocument.fromDelta(Delta delta,
+      {this.heuristics = NotusHeuristics.fallback,
+      this.embedTypes = EmbedTypeMap.fallback})
       : assert(delta != null),
-        _heuristics = NotusHeuristics.fallback,
+        assert(heuristics != null),
+        assert(embedTypes != null),
         _delta = delta {
     _loadDocument(_delta);
   }
 
-  final NotusHeuristics _heuristics;
+  final NotusHeuristics heuristics;
+  final EmbedTypeMap embedTypes;
 
   /// The root node of this document tree.
   RootNode get root => _root;
@@ -111,7 +122,7 @@ class NotusDocument {
 
     text = _sanitizeString(text);
     if (text.isEmpty) return Delta();
-    final change = _heuristics.applyInsertRules(this, index, text);
+    final change = heuristics.applyInsertRules(this, index, text);
     compose(change, ChangeSource.local);
     return change;
   }
@@ -128,7 +139,7 @@ class NotusDocument {
       throw ArgumentError.value(type, 'type', 'Type may not be empty.');
     }
 
-    final change = _heuristics.applyInsertObjectRules(this, index, type, value);
+    final change = heuristics.applyInsertObjectRules(this, index, type, value);
     compose(change, ChangeSource.local);
     return change;
   }
@@ -146,7 +157,7 @@ class NotusDocument {
     if (length == 0) return Delta();
 
     // TODO: need a heuristic rule to ensure last line-break.
-    final change = _heuristics.applyDeleteRules(this, index, length);
+    final change = heuristics.applyDeleteRules(this, index, length);
     if (change.isNotEmpty) {
       // Delete rules are allowed to prevent the edit so it may be empty.
       compose(change, ChangeSource.local);
@@ -218,7 +229,7 @@ class NotusDocument {
     var change = Delta();
 
     final formatChange =
-        _heuristics.applyFormatRules(this, index, length, attribute);
+        heuristics.applyFormatRules(this, index, length, attribute);
     if (formatChange.isNotEmpty) {
       compose(formatChange, ChangeSource.local);
       change = change.compose(formatChange);
@@ -273,9 +284,11 @@ class NotusDocument {
     for (final op in change.operations) {
       final attributes =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
-      // TODO handle object insert
       if (op is InsertStringOp) {
         _root.insert(offset, op.text, attributes);
+      } else if (op is InsertObjectOp) {
+        final embedType = embedTypes.get(op.valueType);
+        _root.insertObject(offset, embedType, op.value, attributes);
       } else if (op.isDelete) {
         _root.delete(offset, op.length);
       } else if (op.attributes != null) {
@@ -317,9 +330,7 @@ class NotusDocument {
 
   /// Loads [document] delta into this document.
   void _loadDocument(Delta doc) {
-    if (doc.isEmpty) return;
-
-    if (!doc.last.mapTextOrElse((t) => t.endsWith('\n'), false)) {
+    if (doc.isEmpty || !doc.last.endsWith('\n')) {
       throw ArgumentError.value(doc, 'doc',
           'Invalid document delta. Document delta must always end with a line-break.');
     }
