@@ -17,7 +17,7 @@ void main() {
         ..insert('Title\nOne')
         ..insert('\n', ul)
         ..insert('Two\n');
-      final actual = rule.apply(doc, 9, 1);
+      final actual = rule.apply(doc, 9, 1, NotusDocumentContext.fallback);
       final expected = Delta()
         ..retain(9)
         ..delete(1)
@@ -32,7 +32,7 @@ void main() {
         ..insert('Title\nOne')
         ..insert('\n', NotusAttribute.ul.toJson())
         ..insert('Two\n');
-      final actual = rule.apply(doc, 5, 1);
+      final actual = rule.apply(doc, 5, 1, NotusDocumentContext.fallback);
       final expected = Delta()
         ..retain(5)
         ..delete(1)
@@ -47,7 +47,7 @@ void main() {
 
     test('applies change as-is', () {
       final doc = Delta()..insert('Document\n');
-      final actual = rule.apply(doc, 3, 5);
+      final actual = rule.apply(doc, 3, 5, NotusDocumentContext.fallback);
       final expected = Delta()
         ..retain(3)
         ..delete(5);

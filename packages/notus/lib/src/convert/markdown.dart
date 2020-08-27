@@ -8,14 +8,15 @@ import 'package:notus/notus.dart';
 import 'package:quill_delta/quill_delta.dart';
 
 class NotusMarkdownCodec extends Codec<Delta, String> {
-  const NotusMarkdownCodec();
+  final NotusDocumentContext context;
+  const NotusMarkdownCodec(this.context) : assert(context != null);
 
   @override
   Converter<String, Delta> get decoder =>
       throw UnimplementedError('Decoding is not implemented yet.');
 
   @override
-  Converter<Delta, String> get encoder => _NotusMarkdownEncoder();
+  Converter<Delta, String> get encoder => _NotusMarkdownEncoder(context);
 }
 
 class _NotusMarkdownEncoder extends Converter<Delta, String> {
@@ -26,6 +27,10 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
     NotusAttribute.ul: '* ',
     NotusAttribute.ol: '1. ',
   };
+
+  final NotusDocumentContext context;
+
+  _NotusMarkdownEncoder(this.context);
 
   @override
   String convert(Delta input) {
@@ -60,13 +65,13 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
     }
 
     void _handleSpan(String text, Map<String, dynamic> attributes) {
-      final style = NotusStyle.fromJson(attributes);
+      final style = NotusStyle.fromJson(attributes, context.attributes);
       currentInlineStyle =
           _writeInline(lineBuffer, text, style, currentInlineStyle);
     }
 
     void _handleLine(Map<String, dynamic> attributes) {
-      final style = NotusStyle.fromJson(attributes);
+      final style = NotusStyle.fromJson(attributes, context.attributes);
       final lineBlock = style.lineStyle();
       if (lineBlock == currentBlockStyle) {
         currentBlockLines.add(_writeLine(lineBuffer.toString(), style));

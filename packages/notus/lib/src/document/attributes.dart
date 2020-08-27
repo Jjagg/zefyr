@@ -109,15 +109,6 @@ class NotusAttribute<T> extends NotusAttributeBase {
   static const code =
       NotusAttribute('code-block', NotusAttributeScope.line, true);
 
-  static NotusAttribute _fromKeyValue(String key, dynamic value) {
-    if (!NotusAttributes._registry.containsKey(key)) {
-      throw ArgumentError.value(
-          key, 'No attribute with key "$key" registered.');
-    }
-    final builder = NotusAttributes._registry[key];
-    return builder.withValue(value);
-  }
-
   const NotusAttribute(String key, NotusAttributeScope scope, this.value)
       : super(key, scope);
 
@@ -164,24 +155,46 @@ class NotusAttribute<T> extends NotusAttributeBase {
   Map<String, dynamic> toJson() => <String, dynamic>{key: value};
 }
 
-// TODO make NotusAttributes an instance so we can customize it from outside notus
-class NotusAttributes {
-  static final Map<String, NotusAttributeBase> _registry = {
-    for (NotusAttributeKey a in [
-      NotusAttribute.bold,
-      NotusAttribute.italic,
-      NotusAttribute.link,
-      NotusAttribute.heading,
-      NotusAttribute.ul,
-      NotusAttribute.ol,
-      NotusAttribute.bq,
-      NotusAttribute.code
-    ])
-      a.key: a
-  };
+class NotusAttributeRegistry {
+  final Map<String, NotusAttributeBase> _registry;
 
-  static bool contains(String key) => _registry.containsKey(key);
-  static bool isLineScoped(String key) => _registry[key]?.isLineScoped ?? false;
+  final NotusAttributeBase Function(String key, dynamic value) createMissing;
+
+  NotusAttributeRegistry._(this._registry, this.createMissing);
+
+  factory NotusAttributeRegistry(List<NotusAttributeBase> attributes,
+      [NotusAttributeBase Function(String key, dynamic value) createMissing]) {
+    assert(attributes != null);
+    return NotusAttributeRegistry._({for (var a in attributes) a.key: a},
+        createMissing ?? defaultCreateMissing);
+  }
+
+  bool contains(String key) => _registry.containsKey(key);
+  bool isLineScoped(String key) => _registry[key]?.isLineScoped ?? false;
+
+  NotusAttributeBase get(String key, dynamic value) =>
+      _registry[key] ?? createMissing(key, value);
+
+  NotusAttribute _fromKeyValue(String key, dynamic value) {
+    var attr = _registry[key];
+    attr ??= createMissing(key, value);
+    return attr.withValue(value);
+  }
+
+  static NotusAttribute defaultCreateMissing(String key, dynamic value) {
+    throw ArgumentError.value(key, 'No attribute with key "$key" registered.');
+  }
+
+  static final NotusAttributeRegistry fallback = NotusAttributeRegistry([
+    NotusAttribute.bold,
+    NotusAttribute.italic,
+    NotusAttribute.link,
+    NotusAttribute.heading,
+    NotusAttribute.ul,
+    NotusAttribute.ol,
+    NotusAttribute.bq,
+    NotusAttribute.code
+  ]);
 }
 
 /// Collection of style attributes.
@@ -190,11 +203,12 @@ class NotusStyle {
 
   final Map<String, NotusAttribute> _data;
 
-  static NotusStyle fromJson(Map<String, dynamic> data) {
+  static NotusStyle fromJson(
+      Map<String, dynamic> data, NotusAttributeRegistry registry) {
     if (data == null) return NotusStyle();
 
     final result = data.map((String key, dynamic value) {
-      var attr = NotusAttribute._fromKeyValue(key, value);
+      var attr = registry._fromKeyValue(key, value);
       return MapEntry<String, NotusAttribute>(key, attr);
     });
     return NotusStyle._(result);

@@ -20,15 +20,18 @@ class EditorSandBox {
     @required WidgetTester tester,
     FocusNode focusNode,
     NotusDocument document,
+    ZefyrEmbedRegistry embedMap,
     ZefyrThemeData theme,
     bool autofocus = false,
     ZefyrImageDelegate imageDelegate,
   }) {
     focusNode ??= FocusNode();
-    document ??= NotusDocument.fromDelta(delta);
+    document ??= NotusDocument.fromDelta(delta,
+        embedRegistry: (embedMap ?? ZefyrEmbedRegistry.fallback).toTypeMap());
     var controller = ZefyrController(document);
 
     Widget widget = _ZefyrSandbox(
+      embedMap: embedMap,
       controller: controller,
       focusNode: focusNode,
       autofocus: autofocus,
@@ -124,11 +127,13 @@ class _ZefyrSandbox extends StatefulWidget {
     @required this.focusNode,
     this.autofocus = false,
     this.imageDelegate,
+    this.embedMap,
   }) : super(key: key);
   final ZefyrController controller;
   final FocusNode focusNode;
   final bool autofocus;
   final ZefyrImageDelegate imageDelegate;
+  final ZefyrEmbedRegistry embedMap;
 
   @override
   _ZefyrSandboxState createState() => _ZefyrSandboxState();
@@ -144,6 +149,7 @@ class _ZefyrSandboxState extends State<_ZefyrSandbox> {
       focusNode: widget.focusNode,
       mode: _enabled ? ZefyrMode.edit : ZefyrMode.view,
       autofocus: widget.autofocus,
+      embedMap: widget.embedMap,
       imageDelegate: widget.imageDelegate,
     );
   }

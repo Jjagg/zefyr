@@ -25,28 +25,38 @@ class EmbedType {
   static Object _defaultFromJson(dynamic json) => json;
 
   static String _defaultStringify(EmbedType type, Object obj) =>
-      '$type.key: ${obj.toString()}';
+      '${type.key}: ${obj.toString()}';
 }
 
-class EmbedTypeMap {
-  final Map<String, EmbedType> _embedMap;
+class NotusEmbedRegistry {
+  final Map<String, EmbedType> _registry;
 
   /// Function to call to create an embed for object inserts with missing keys.
-  final EmbedType Function(String key) createMissing;
+  final EmbedType Function(String key, Object value) createMissing;
 
-  const EmbedTypeMap._(this._embedMap, this.createMissing);
+  const NotusEmbedRegistry._(this._registry, this.createMissing);
 
-  factory EmbedTypeMap(List<EmbedType> embeds,
+  factory NotusEmbedRegistry(List<EmbedType> embeds,
       [EmbedType Function(String key) createMissing]) {
     assert(embeds != null);
-    return EmbedTypeMap._({for (var e in embeds) e.key: e},
+    return NotusEmbedRegistry._({for (var e in embeds) e.key: e},
         createMissing ?? defaultCreateMissing);
   }
 
-  EmbedType get(String key) => _embedMap[key] ?? createMissing(key);
+  EmbedType get(String key, Object value) =>
+      _registry[key] ?? createMissing(key, value);
 
-  static EmbedType defaultCreateMissing(String key) =>
+  static EmbedType defaultCreateMissing(String key, Object value) =>
       EmbedType(EmbedPlacement.line, key);
 
-  static const EmbedTypeMap fallback = EmbedTypeMap._({}, defaultCreateMissing);
+  static const NotusEmbedRegistry fallback = NotusEmbedRegistry._(
+      {'hr': NotusEmbeds.hrEmbed, 'image': NotusEmbeds.imageEmbed},
+      defaultCreateMissing);
+}
+
+class NotusEmbeds {
+  static String _stringifyHr(EmbedType t, Object o) => 'hr';
+  static const EmbedType hrEmbed =
+      EmbedType(EmbedPlacement.line, 'hr', stringify: _stringifyHr);
+  static const EmbedType imageEmbed = EmbedType(EmbedPlacement.line, 'image');
 }

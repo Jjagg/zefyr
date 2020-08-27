@@ -126,6 +126,7 @@ class ZefyrController extends ChangeNotifier {
           delta.isNotEmpty &&
           delta.length <= 2 &&
           delta.last.isInsert) {
+        // TODO toggled style should be part of the insert operation
         // Apply it.
         final retainDelta = Delta()
           ..retain(index)
@@ -170,11 +171,17 @@ class ZefyrController extends ChangeNotifier {
 
   void replaceTextWithObject(
       int index, int length, String type, Object value, NotusStyle style) {
-    if (length > 0) replaceText(index, length, '');
-    final delta = Delta()
-      ..retain(index)
-      ..insertObject(type, value, style?.toJson());
-    document.compose(delta, ChangeSource.local);
+    if (length > 0) {
+      document.delete(index, length);
+    }
+
+    document.insertObject(index, type, value, style);
+
+    // Always reset it after any user action, even if it has not been applied.
+    _toggledStyles = NotusStyle();
+
+    _lastChangeSource = ChangeSource.local;
+    notifyListeners();
   }
 
   void formatText(int index, int length, NotusAttribute attribute) {

@@ -26,29 +26,30 @@ class ZefyrScope extends ChangeNotifier {
   /// Creates a view-only scope.
   ///
   /// Normally used in [ZefyrView].
-  ZefyrScope.view({ZefyrImageDelegate imageDelegate})
+  ZefyrScope.view({ZefyrEmbedRegistry embedMap, ZefyrImageDelegate imageDelegate})
       : isEditable = false,
         _mode = ZefyrMode.view,
-        embedMap = ZefyrEmbedMap.fallback,
+        embedMap = embedMap ?? ZefyrEmbedRegistry.fallback,
         _imageDelegate = imageDelegate;
 
   /// Creates editable scope.
   ///
   /// Normally used in [ZefyrEditor].
-  ZefyrScope.editable({
-    @required ZefyrMode mode,
-    @required ZefyrController controller,
-    @required FocusNode focusNode,
-    @required FocusScopeNode focusScope,
-    ZefyrImageDelegate imageDelegate,
-  })  : assert(mode != null),
+  ZefyrScope.editable(
+      {@required ZefyrMode mode,
+      @required ZefyrController controller,
+      @required FocusNode focusNode,
+      @required FocusScopeNode focusScope,
+      ZefyrEmbedRegistry embedMap,
+      ZefyrImageDelegate imageDelegate})
+      : assert(mode != null),
         assert(controller != null),
         assert(focusNode != null),
         assert(focusScope != null),
         isEditable = true,
         _mode = mode,
         _controller = controller,
-        embedMap = ZefyrEmbedMap.fallback,
+        embedMap = embedMap ?? ZefyrEmbedRegistry.fallback,
         _imageDelegate = imageDelegate,
         _focusNode = focusNode,
         _focusScope = focusScope,
@@ -66,7 +67,7 @@ class ZefyrScope extends ChangeNotifier {
     return widget.scope;
   }
 
-  final ZefyrEmbedMap embedMap;
+  final ZefyrEmbedRegistry embedMap;
 
   ZefyrImageDelegate _imageDelegate;
   ZefyrImageDelegate get imageDelegate => _imageDelegate;

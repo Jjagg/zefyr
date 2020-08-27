@@ -130,7 +130,7 @@ class _ZefyrLineState extends State<ZefyrLine> {
     final attrs = segment.style;
 
     return TextSpan(
-      text: segment.value,
+      text: segment.stringValue,
       style: _getTextStyle(attrs, theme),
     );
   }

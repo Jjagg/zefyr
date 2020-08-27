@@ -12,17 +12,8 @@ abstract class InsertRule {
 
   /// Applies heuristic rule to an insert operation on a [document] and returns
   /// resulting [Delta].
-  Delta apply(Delta document, int index, String text);
-}
-
-/// A heuristic rule for insert object operations.
-abstract class InsertObjectRule {
-  /// Constant constructor allows subclasses to declare constant constructors.
-  const InsertObjectRule();
-
-  /// Applies heuristic rule to an insert object operation on a [document] and returns
-  /// resulting [Delta].
-  Delta apply(Delta document, int index, String type, Object value);
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context);
 }
 
 /// Fallback rule which simply inserts text as-is without any special handling.
@@ -30,7 +21,8 @@ class CatchAllInsertRule extends InsertRule {
   const CatchAllInsertRule();
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     return Delta()
       ..retain(index)
       ..insert(text);
@@ -50,7 +42,8 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
   }
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     if (text != '\n') return null;
 
     final iter = DeltaIterator(document);
@@ -88,7 +81,8 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
   const ResetLineFormatOnNewLineRule();
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     if (text != '\n') return null;
 
     final iter = DeltaIterator(document);
@@ -123,7 +117,8 @@ class AutoExitBlockRule extends InsertRule {
   }
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     if (text != '\n') return null;
 
     final iter = DeltaIterator(document);
@@ -131,7 +126,7 @@ class AutoExitBlockRule extends InsertRule {
     final target = iter.next();
     final blockAttributeKey = target.hasAttributes
         ? target.attributes.keys
-            .firstWhere((a) => NotusAttributes.isLineScoped(a))
+            .firstWhere((a) => context.attributes.isLineScoped(a))
         : null;
     if (isEmptyLine(previous, target) && blockAttributeKey != null) {
       // We reset block style even if this line is not the last one in its
@@ -155,7 +150,8 @@ class PreserveInlineStylesRule extends InsertRule {
   const PreserveInlineStylesRule();
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     // This rule is only applicable to characters other than line-break.
     if (text.contains('\n')) return null;
 
@@ -210,7 +206,8 @@ class AutoFormatLinksRule extends InsertRule {
   const AutoFormatLinksRule();
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     // This rule applies to a space inserted after a link, so we can ignore
     // everything else.
     if (text != ' ') return null;
@@ -254,7 +251,8 @@ class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
   const ForceNewlineForInsertsAroundEmbedRule();
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     final iter = DeltaIterator(document);
     final previous = iter.skip(index);
     final target = iter.next();
@@ -287,7 +285,8 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
   }
 
   @override
-  Delta apply(Delta document, int index, String text) {
+  Delta apply(
+      Delta document, int index, String text, NotusDocumentContext context) {
     if (!text.contains('\n') || text.length == 1) {
       // Only interested in text containing at least one line-break and at least
       // one more character.
@@ -309,7 +308,8 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
     }
 
     final lineStyleKey = lineAttributes == null
-        ? lineAttributes.keys.firstWhere((a) => NotusAttributes.isLineScoped(a))
+        ? lineAttributes.keys
+            .firstWhere((a) => context.attributes.isLineScoped(a))
         : null;
 
     Map<String, dynamic> resetStyle;
@@ -317,7 +317,7 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
     if (lineStyleKey != null) {
       if (lineStyleKey == NotusAttribute.heading.key) {
         resetStyle = NotusAttribute.heading.unset.toJson();
-      } else if (NotusAttributes.contains(lineStyleKey)) {
+      } else if (context.attributes.contains(lineStyleKey)) {
         blockStyle = <String, dynamic>{
           lineStyleKey: lineAttributes[lineStyleKey]
         };

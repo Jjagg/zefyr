@@ -36,39 +36,57 @@ class NotusChange {
   final ChangeSource source;
 }
 
+class NotusDocumentContext {
+  final NotusEmbedRegistry embeds;
+  final NotusAttributeRegistry attributes;
+
+  NotusDocumentContext(this.embeds, this.attributes)
+      : assert(embeds != null),
+        assert(attributes != null);
+
+  static final NotusDocumentContext fallback = NotusDocumentContext(
+      NotusEmbedRegistry.fallback, NotusAttributeRegistry.fallback);
+}
+
 /// A rich text document.
 class NotusDocument {
   /// Creates new empty Notus document.
   NotusDocument(
-      {this.heuristics = NotusHeuristics.fallback,
-      this.embedTypes = EmbedTypeMap.fallback})
-      : assert(heuristics != null),
-        assert(embedTypes != null),
-        _delta = Delta()..insert('\n') {
-    _loadDocument(_delta);
-  }
+      {NotusHeuristics heuristics,
+      NotusEmbedRegistry embedRegistry,
+      NotusAttributeRegistry attributeRegistry})
+      : this.fromDelta(Delta()..insert('\n'),
+            heuristics: heuristics,
+            embedRegistry: embedRegistry,
+            attributeRegistry: attributeRegistry);
 
   NotusDocument.fromJson(List data,
-      {this.heuristics = NotusHeuristics.fallback,
-      this.embedTypes = EmbedTypeMap.fallback})
-      : assert(heuristics != null),
-        assert(embedTypes != null),
-        _delta = Delta.fromJson(data) {
-    _loadDocument(_delta);
-  }
+      {NotusHeuristics heuristics,
+      NotusEmbedRegistry embedRegistry,
+      NotusAttributeRegistry attributeRegistry})
+      : this.fromDelta(Delta.fromJson(data),
+            heuristics: heuristics,
+            embedRegistry: embedRegistry,
+            attributeRegistry: attributeRegistry);
 
   NotusDocument.fromDelta(Delta delta,
-      {this.heuristics = NotusHeuristics.fallback,
-      this.embedTypes = EmbedTypeMap.fallback})
+      {NotusHeuristics heuristics,
+      NotusEmbedRegistry embedRegistry,
+      NotusAttributeRegistry attributeRegistry})
       : assert(delta != null),
-        assert(heuristics != null),
-        assert(embedTypes != null),
+        heuristics = heuristics ?? NotusHeuristics.fallback,
+        embedRegistry = embedRegistry ?? NotusEmbedRegistry.fallback,
+        attributeRegistry =
+            attributeRegistry ?? NotusAttributeRegistry.fallback,
         _delta = delta {
     _loadDocument(_delta);
   }
 
   final NotusHeuristics heuristics;
-  final EmbedTypeMap embedTypes;
+  final NotusEmbedRegistry embedRegistry;
+  final NotusAttributeRegistry attributeRegistry;
+  NotusDocumentContext get context =>
+      NotusDocumentContext(embedRegistry, attributeRegistry);
 
   /// The root node of this document tree.
   RootNode get root => _root;
@@ -122,7 +140,7 @@ class NotusDocument {
 
     text = _sanitizeString(text);
     if (text.isEmpty) return Delta();
-    final change = heuristics.applyInsertRules(this, index, text);
+    final change = heuristics.applyInsertRules(this, index, text, context);
     compose(change, ChangeSource.local);
     return change;
   }
@@ -133,13 +151,14 @@ class NotusDocument {
   /// produces a [NotusChange] with source set to [ChangeSource.local].
   ///
   /// Returns an instance of [Delta] actually composed into this document.
-  Delta insertObject(int index, String type, Object value) {
+  Delta insertObject(int index, String type, Object value, NotusStyle style) {
     _validateIndex(index);
     if (type == null || type.isEmpty) {
       throw ArgumentError.value(type, 'type', 'Type may not be empty.');
     }
 
-    final change = heuristics.applyInsertObjectRules(this, index, type, value);
+    final change = heuristics.applyInsertObjectRules(
+        this, index, type, value, style, context);
     compose(change, ChangeSource.local);
     return change;
   }
@@ -157,7 +176,7 @@ class NotusDocument {
     if (length == 0) return Delta();
 
     // TODO: need a heuristic rule to ensure last line-break.
-    final change = heuristics.applyDeleteRules(this, index, length);
+    final change = heuristics.applyDeleteRules(this, index, length, context);
     if (change.isNotEmpty) {
       // Delete rules are allowed to prevent the edit so it may be empty.
       compose(change, ChangeSource.local);
@@ -229,7 +248,7 @@ class NotusDocument {
     var change = Delta();
 
     final formatChange =
-        heuristics.applyFormatRules(this, index, length, attribute);
+        heuristics.applyFormatRules(this, index, length, attribute, context);
     if (formatChange.isNotEmpty) {
       compose(formatChange, ChangeSource.local);
       change = change.compose(formatChange);
@@ -282,12 +301,13 @@ class NotusDocument {
     var offset = 0;
     final before = copyDelta();
     for (final op in change.operations) {
-      final attributes =
-          op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
+      final attributes = op.attributes != null
+          ? NotusStyle.fromJson(op.attributes, attributeRegistry)
+          : null;
       if (op is InsertStringOp) {
         _root.insert(offset, op.text, attributes);
       } else if (op is InsertObjectOp) {
-        final embedType = embedTypes.get(op.valueType);
+        final embedType = embedRegistry.get(op.key, op.value);
         _root.insertObject(offset, embedType, op.value, attributes);
       } else if (op.isDelete) {
         _root.delete(offset, op.length);
@@ -298,10 +318,12 @@ class NotusDocument {
     }
     _delta = _delta.compose(change);
 
-    if (_delta != _root.toDelta()) {
-      throw StateError('Compose produced inconsistent results. '
-          'This is likely due to a bug in the library. Tried to compose change $change from $source.');
-    }
+    assert(
+        _delta == _root.toDelta(),
+        'Compose produced inconsistent results. '
+        'This is likely due to a bug in the library. '
+        'Tried to compose change $change from $source.');
+
     _controller.add(NotusChange(before, change, source));
   }
 
@@ -336,12 +358,14 @@ class NotusDocument {
     }
     var offset = 0;
     for (final op in doc.operations) {
-      final style =
-          op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
+      final style = op.attributes != null
+          ? NotusStyle.fromJson(op.attributes, attributeRegistry)
+          : null;
       if (op is InsertStringOp) {
         _root.insert(offset, op.text, style);
       } else if (op is InsertObjectOp) {
-        throw UnimplementedError('Have yet to implement insert object.');
+        final embedType = embedRegistry.get(op.key, op.value);
+        _root.insertObject(offset, embedType, op.value, style);
       } else {
         throw ArgumentError.value(doc,
             'Document Delta can only contain insert operations but ${op.type} found.');

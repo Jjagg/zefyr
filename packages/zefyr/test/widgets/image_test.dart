@@ -9,30 +9,29 @@ import 'package:zefyr/zefyr.dart';
 
 import '../testing.dart';
 
+EditorSandBox createEditor(WidgetTester tester) => EditorSandBox(
+      tester: tester,
+      imageDelegate: _TestImageDelegate(),
+      document: NotusDocument.fromDelta(delta));
+
 void main() {
   group('$ZefyrImage', () {
     testWidgets('embed image', (tester) async {
-      final editor = EditorSandBox(
-        tester: tester,
-        imageDelegate: _TestImageDelegate(),
-      );
+      final editor = createEditor(tester);
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.photo);
       await editor.tapButtonWithIcon(Icons.photo_camera);
       LineNode line = editor.document.root.children.last;
       expect(line.hasLineEmbed, isTrue);
       EmbedNode embed = line.children.single;
-      expect(embed.type, 'image');
-      expect(embed.value, 'file:///tmp/test.jpg');
+      expect(embed.type.key, 'image');
+      expect(embed.object, 'file:///tmp/test.jpg');
       expect(find.byType(ZefyrImage), findsOneWidget);
     });
 
     testWidgets('tap on left side of image puts caret before it',
         (tester) async {
-      final editor = EditorSandBox(
-        tester: tester,
-        imageDelegate: _TestImageDelegate(),
-      );
+      final editor = createEditor(tester);
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.photo);
       await editor.tapButtonWithIcon(Icons.photo_camera);
@@ -46,10 +45,7 @@ void main() {
     });
 
     testWidgets('tap right side of image puts caret after it', (tester) async {
-      final editor = EditorSandBox(
-        tester: tester,
-        imageDelegate: _TestImageDelegate(),
-      );
+      final editor = createEditor(tester);
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.photo);
       await editor.tapButtonWithIcon(Icons.photo_camera);
@@ -65,10 +61,7 @@ void main() {
     });
 
     testWidgets('selects on long press', (tester) async {
-      final editor = EditorSandBox(
-        tester: tester,
-        imageDelegate: _TestImageDelegate(),
-      );
+      final editor = createEditor(tester);
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.photo);
       await editor.tapButtonWithIcon(Icons.photo_camera);
@@ -84,7 +77,7 @@ void main() {
           as ZefyrSelectionOverlayState;
       expect(state.isToolbarVisible, isTrue);
     });
-  }, skip: 'Fix image');
+  });
 }
 
 class _TestImageDelegate implements ZefyrImageDelegate<String> {

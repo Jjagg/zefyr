@@ -15,7 +15,8 @@ void main() {
     test('apply', () {
       final doc = Delta()..insert('Correct\nLine\nStyle\nRule\n');
 
-      final actual = rule.apply(doc, 0, 20, NotusAttribute.ul);
+      final actual = rule.apply(
+          doc, 0, 20, NotusAttribute.ul, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final ul = NotusAttribute.ul.toJson();
       final expected = Delta()
@@ -32,7 +33,8 @@ void main() {
 
     test('apply with zero length (collapsed selection)', () {
       final doc = Delta()..insert('Correct\nLine\nStyle\nRule\n');
-      final actual = rule.apply(doc, 0, 0, NotusAttribute.ul);
+      final actual = rule.apply(
+          doc, 0, 0, NotusAttribute.ul, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final ul = NotusAttribute.ul.toJson();
       final expected = Delta()..retain(7)..retain(1, ul);
@@ -47,7 +49,8 @@ void main() {
         ..insert('Two')
         ..insert('\n', ul)
         ..insert('Three!\n');
-      final actual = rule.apply(doc, 7, 0, NotusAttribute.ul);
+      final actual = rule.apply(
+          doc, 7, 0, NotusAttribute.ul, NotusDocumentContext.fallback);
       final expected = Delta()..retain(9)..retain(1, ul);
       expect(actual, expected);
     });
@@ -59,7 +62,8 @@ void main() {
     test('apply', () {
       final doc = Delta()..insert('Correct\nLine\nStyle\nRule\n');
 
-      final actual = rule.apply(doc, 0, 20, NotusAttribute.bold);
+      final actual = rule.apply(
+          doc, 0, 20, NotusAttribute.bold, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final b = NotusAttribute.bold.toJson();
       final expected = Delta()
@@ -87,7 +91,8 @@ void main() {
         ..insert('website', link.toJson())
         ..insert(' for more details.\n');
 
-      final actual = rule.apply(doc, 13, 0, newLink);
+      final actual =
+          rule.apply(doc, 13, 0, newLink, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final expected = Delta()..retain(10)..retain(7, newLink.toJson());
       expect(actual, expected);

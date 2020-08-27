@@ -25,15 +25,15 @@ void main() {
       );
 
       expect(() {
-        heuristics.applyInsertRules(doc, 0, 'a');
+        heuristics.applyInsertRules(doc, 0, 'a', NotusDocumentContext.fallback);
       }, throwsStateError);
 
       expect(() {
-        heuristics.applyDeleteRules(doc, 0, 1);
+        heuristics.applyDeleteRules(doc, 0, 1, NotusDocumentContext.fallback);
       }, throwsStateError);
 
       expect(() {
-        heuristics.applyFormatRules(doc, 0, 1, NotusAttribute.bold);
+        heuristics.applyFormatRules(doc, 0, 1, NotusAttribute.bold, NotusDocumentContext.fallback);
       }, throwsStateError);
     });
   });

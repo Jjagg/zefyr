@@ -12,7 +12,7 @@ abstract class DeleteRule {
 
   /// Applies heuristic rule to a delete operation on a [document] and returns
   /// resulting [Delta].
-  Delta apply(Delta document, int index, int length);
+  Delta apply(Delta document, int index, int length, NotusDocumentContext context);
 }
 
 /// Fallback rule for delete operations which simply deletes specified text
@@ -21,7 +21,7 @@ class CatchAllDeleteRule extends DeleteRule {
   const CatchAllDeleteRule();
 
   @override
-  Delta apply(Delta document, int index, int length) {
+  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
     return Delta()
       ..retain(index)
       ..delete(length);
@@ -38,7 +38,7 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
   const PreserveLineStyleOnMergeRule();
 
   @override
-  Delta apply(Delta document, int index, int length) {
+  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
     final iter = DeltaIterator(document);
     iter.skip(index);
     final target = iter.next(1);
@@ -81,7 +81,7 @@ class EnsureEmbedLineRule extends DeleteRule {
   const EnsureEmbedLineRule();
 
   @override
-  Delta apply(Delta document, int index, int length) {
+  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
     final iter = DeltaIterator(document);
 
     // First, check if line-break deleted after an embed.

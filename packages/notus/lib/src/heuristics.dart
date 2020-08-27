@@ -33,6 +33,7 @@ class NotusHeuristics {
   ];
 
   static const List<InsertObjectRule> _defaultInsertObjectRules = [
+    InsertLinePlacedObjectRule(),
     CatchAllInsertObjectRule(),
   ];
 
@@ -87,10 +88,10 @@ class NotusHeuristics {
 
   /// Applies heuristic rules to specified insert operation based on current
   /// state of Notus [document].
-  Delta applyInsertRules(NotusDocument document, int index, String text) {
+  Delta applyInsertRules(NotusDocument document, int index, String text, NotusDocumentContext context) {
     final delta = document.delta;
     for (var rule in insertRules) {
-      final result = rule.apply(delta, index, text);
+      final result = rule.apply(delta, index, text, context);
       if (result != null) return result..trim();
     }
     throw StateError('Failed to apply insert heuristic rules: none applied.');
@@ -98,11 +99,12 @@ class NotusHeuristics {
 
   /// Applies heuristic rules to specified insert operation based on current
   /// state of Notus [document].
-  Delta applyInsertObjectRules(
-      NotusDocument document, int index, String type, Object value) {
+  Delta applyInsertObjectRules(NotusDocument document, int index,
+      String typeKey, Object value, NotusStyle style, NotusDocumentContext context) {
     final delta = document.delta;
+    final type = document.embedRegistry.get(typeKey, value);
     for (var rule in insertObjectRules) {
-      final result = rule.apply(delta, index, type, value);
+      final result = rule.apply(delta, index, type, value, style, context);
       if (result != null) return result..trim();
     }
     throw StateError(
@@ -112,10 +114,10 @@ class NotusHeuristics {
   /// Applies heuristic rules to specified format operation based on current
   /// state of Notus [document].
   Delta applyFormatRules(
-      NotusDocument document, int index, int length, NotusAttribute value) {
+      NotusDocument document, int index, int length, NotusAttribute value, NotusDocumentContext context) {
     final delta = document.delta;
     for (var rule in formatRules) {
-      final result = rule.apply(delta, index, length, value);
+      final result = rule.apply(delta, index, length, value, context);
       if (result != null) return result..trim();
     }
     throw StateError('Failed to apply format heuristic rules: none applied.');
@@ -123,10 +125,10 @@ class NotusHeuristics {
 
   /// Applies heuristic rules to specified delete operation based on current
   /// state of Notus [document].
-  Delta applyDeleteRules(NotusDocument document, int index, int length) {
+  Delta applyDeleteRules(NotusDocument document, int index, int length, NotusDocumentContext context) {
     final delta = document.delta;
     for (var rule in deleteRules) {
-      final result = rule.apply(delta, index, length);
+      final result = rule.apply(delta, index, length, context);
       if (result != null) return result..trim();
     }
     throw StateError('Failed to apply delete heuristic rules: none applied.');

@@ -22,7 +22,7 @@ void main() {
 
     test('new empty text', () {
       final node = TextNode();
-      expect(node.value, isEmpty);
+      expect(node.stringValue, isEmpty);
       expect(node.length, 0);
       expect(node.style, NotusStyle());
       expect(node.toDelta(), isEmpty);
@@ -35,19 +35,19 @@ void main() {
     });
 
     test('new text with contents', () {
-      expect(node.value, isNotEmpty);
+      expect(node.stringValue, isNotEmpty);
       expect(node.length, 16);
       expect(node.toDelta().operations, [InsertOp.string('London "Grammar"')]);
     });
 
     test('insert at the end', () {
       node.insert(16, '!!!', null);
-      expect(node.value, 'London "Grammar"!!!');
+      expect(node.stringValue, 'London "Grammar"!!!');
     });
 
     test('delete tail', () {
       node.delete(6, 10);
-      expect(node.value, 'London');
+      expect(node.stringValue, 'London');
     });
 
     test('format substring', () {
@@ -61,7 +61,7 @@ void main() {
     test('format full segment', () {
       node.retain(0, 16, boldStyle);
       expect(line.childCount, 1);
-      expect(node.value, 'London "Grammar"');
+      expect(node.stringValue, 'London "Grammar"');
       expect(node.style.values, [NotusAttribute.bold]);
     });
 
@@ -76,7 +76,7 @@ void main() {
       line.retain(0, 6, boldUnsetStyle);
       expect(line.childCount, 1);
 
-      expect(node.value, 'London "Grammar"');
+      expect(node.stringValue, 'London "Grammar"');
       expect(node.style, isEmpty);
     });
 

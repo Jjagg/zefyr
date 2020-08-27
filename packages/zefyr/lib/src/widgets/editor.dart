@@ -4,6 +4,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:zefyr/src/embed.dart';
 
 import 'controller.dart';
 import 'editable_text.dart';
@@ -23,6 +24,7 @@ class ZefyrEditor extends StatefulWidget {
     this.autofocus = true,
     this.mode = ZefyrMode.edit,
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
+    this.embedMap,
     this.toolbarDelegate,
     this.imageDelegate,
     this.selectionControls,
@@ -50,6 +52,9 @@ class ZefyrEditor extends StatefulWidget {
 
   /// Editing mode of this editor.
   final ZefyrMode mode;
+
+  /// Map for supported embeddable objects.
+  final ZefyrEmbedRegistry embedMap;
 
   /// Optional delegate for customizing this editor's toolbar.
   final ZefyrToolbarDelegate toolbarDelegate;
@@ -156,6 +161,7 @@ class _ZefyrEditorState extends State<ZefyrEditor> {
     if (_scope == null) {
       _scope = ZefyrScope.editable(
         mode: widget.mode,
+        embedMap: widget.embedMap,
         imageDelegate: _imageDelegate,
         controller: widget.controller,
         focusNode: widget.focusNode,

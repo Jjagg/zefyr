@@ -31,7 +31,7 @@ abstract class LeafNode extends Node
   }
 
   /// Plain-text value of this node.
-  String get value => _value;
+  String get stringValue => _value;
   String _value;
 
   /// Splits this leaf node at [index] and returns new node.
@@ -189,7 +189,7 @@ abstract class LeafNode extends Node
 /// TextNode is a leaf node of a document tree.
 ///
 /// Parent of a text node is always a [LineNode], and as a consequence text
-/// node's [value] cannot contain any line-break characters.
+/// node's [stringValue] cannot contain any line-break characters.
 ///
 /// See also:
 ///
@@ -214,7 +214,7 @@ class TextNode extends LeafNode {
     if (!node.isFirst) {
       LeafNode mergeWith = node.previous;
       if (mergeWith.style == node.style) {
-        mergeWith._value += node.value;
+        mergeWith._value += node.stringValue;
         node.unlink();
         node = mergeWith;
       }
@@ -232,7 +232,7 @@ class TextNode extends LeafNode {
   String toString() {
     final keys = style.keys.toList(growable: false)..sort();
     final styleKeys = keys.join();
-    return '⟨$value⟩$styleKeys';
+    return '⟨$stringValue⟩$styleKeys';
   }
 }
 
