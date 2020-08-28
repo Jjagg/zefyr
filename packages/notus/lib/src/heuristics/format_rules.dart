@@ -12,7 +12,8 @@ abstract class FormatRule {
 
   /// Applies heuristic rule to a retain (format) operation on a [document] and
   /// returns resulting [Delta].
-  Delta apply(Delta document, int index, int length, NotusAttribute attribute, NotusDocumentContext context);
+  Delta apply(Delta document, int index, int length, NotusAttribute attribute,
+      NotusDocumentContext context);
 }
 
 /// Produces Delta with line-level attributes applied strictly to
@@ -21,7 +22,8 @@ class ResolveLineFormatRule extends FormatRule {
   const ResolveLineFormatRule() : super();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusAttribute attribute, NotusDocumentContext context) {
+  Delta apply(Delta document, int index, int length, NotusAttribute attribute,
+      NotusDocumentContext context) {
     if (attribute.scope != NotusAttributeScope.line) return null;
 
     var result = Delta()..retain(index);
@@ -50,7 +52,7 @@ class ResolveLineFormatRule extends FormatRule {
         result..retain(op.length);
         continue;
       }
-      result..retain(lf)..retain(1, attribute.toJson());
+      result..retain(lf)..retain(1, attribute.toMap());
       break;
     }
     return result;
@@ -61,7 +63,7 @@ class ResolveLineFormatRule extends FormatRule {
     var offset = 0;
     var lf = text.indexOf('\n');
     while (lf >= 0) {
-      result..retain(lf - offset)..retain(1, attribute.toJson());
+      result..retain(lf - offset)..retain(1, attribute.toMap());
       offset = lf + 1;
       lf = text.indexOf('\n', offset);
     }
@@ -77,7 +79,8 @@ class ResolveInlineFormatRule extends FormatRule {
   const ResolveInlineFormatRule();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusAttribute attribute, NotusDocumentContext context) {
+  Delta apply(Delta document, int index, int length, NotusAttribute attribute,
+      NotusDocumentContext context) {
     if (attribute.scope != NotusAttributeScope.inline) return null;
 
     final result = Delta()..retain(index);
@@ -93,13 +96,13 @@ class ResolveInlineFormatRule extends FormatRule {
       if (lf != -1) {
         var pos = 0;
         while (lf != -1) {
-          result..retain(lf - pos, attribute.toJson())..retain(1);
+          result..retain(lf - pos, attribute.toMap())..retain(1);
           pos = lf + 1;
           lf = op.indexOf('\n', pos);
         }
-        if (pos < op.length) result.retain(op.length - pos, attribute.toJson());
+        if (pos < op.length) result.retain(op.length - pos, attribute.toMap());
       } else {
-        result.retain(op.length, attribute.toJson());
+        result.retain(op.length, attribute.toMap());
       }
       current += op.length;
     }
@@ -113,7 +116,8 @@ class FormatLinkAtCaretPositionRule extends FormatRule {
   const FormatLinkAtCaretPositionRule();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusAttribute attribute, NotusDocumentContext context) {
+  Delta apply(Delta document, int index, int length, NotusAttribute attribute,
+      NotusDocumentContext context) {
     if (attribute.key != NotusAttribute.link.key) return null;
     // TODO apply link to selection improvements
     // If user selection is not collapsed we let it fallback to default rule
@@ -141,7 +145,7 @@ class FormatLinkAtCaretPositionRule extends FormatRule {
     // no-op action.
     if (retain == 0) return null;
 
-    result..retain(startIndex)..retain(retain, attribute.toJson());
+    result..retain(startIndex)..retain(retain, attribute.toMap());
 
     return result;
   }

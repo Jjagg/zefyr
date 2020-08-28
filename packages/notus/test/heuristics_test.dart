@@ -11,8 +11,8 @@ NotusDocument dartconfDoc() {
   return NotusDocument.fromDelta(delta);
 }
 
-final ul = NotusAttribute.ul.toJson();
-final h1 = NotusAttribute.h1.toJson();
+final ul = NotusAttribute.ul.toMap();
+final h1 = NotusAttribute.h1.toMap();
 
 void main() {
   group('$NotusHeuristics', () {

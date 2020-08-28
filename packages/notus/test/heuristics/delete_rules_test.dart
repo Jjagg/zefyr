@@ -5,14 +5,14 @@ import 'package:test/test.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:notus/notus.dart';
 
-final ul = NotusAttribute.ul.toJson();
-final bold = NotusAttribute.bold.toJson();
+final ul = NotusAttribute.ul.toMap();
+final bold = NotusAttribute.bold.toMap();
 
 void main() {
   group('$PreserveLineStyleOnMergeRule', () {
     final rule = PreserveLineStyleOnMergeRule();
     test('preserves block style', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()
         ..insert('Title\nOne')
         ..insert('\n', ul)
@@ -27,10 +27,10 @@ void main() {
     });
 
     test('resets block style', () {
-      final unsetUl = NotusAttribute.ul.unset.toJson();
+      final unsetUl = NotusAttribute.ul.unset.toMap();
       final doc = Delta()
         ..insert('Title\nOne')
-        ..insert('\n', NotusAttribute.ul.toJson())
+        ..insert('\n', NotusAttribute.ul.toMap())
         ..insert('Two\n');
       final actual = rule.apply(doc, 5, 1, NotusDocumentContext.fallback);
       final expected = Delta()

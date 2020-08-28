@@ -85,9 +85,9 @@ void main() {
         expect(node.childCount, 2);
 
         final delta = Delta()
-          ..insert('London "Grammar"', boldStyle.toJson())
+          ..insert('London "Grammar"', boldStyle.toMap())
           ..insert(' - Hey Now')
-          ..insert('\n', NotusAttribute.h1.toJson());
+          ..insert('\n', NotusAttribute.h1.toMap());
         expect(node.toDelta(), delta);
       });
 
@@ -123,7 +123,7 @@ void main() {
         expect(line, hasLength(15));
         final delta = Delta()
           ..insert('Hello ')
-          ..insert('world', boldStyle.toJson())
+          ..insert('world', boldStyle.toMap())
           ..insert('!!!\n');
         expect(line.toDelta(), delta);
       });
@@ -152,8 +152,8 @@ void main() {
         expect(node.childCount, 1);
 
         final delta = Delta()
-          ..insertObject(lineEmbedType.key, null, boldStyle.toJson())
-          ..insert('\n', NotusAttribute.h1.toJson());
+          ..insertObject(lineEmbedType.key, null, boldStyle.toMap())
+          ..insert('\n', NotusAttribute.h1.toMap());
         expect(node.toDelta(), delta);
       });
 
@@ -174,7 +174,7 @@ void main() {
 
       final delta = Delta()
         ..insert('Hello world')
-        ..insert('\n', NotusAttribute.h1.toJson());
+        ..insert('\n', NotusAttribute.h1.toMap());
       expect(line.toDelta(), delta);
     });
 
@@ -193,7 +193,7 @@ void main() {
     });
 
     test('format root line to unset block style', () {
-      final unsetBlock = NotusStyle().put(NotusAttribute.ul.unset);
+      final unsetBlock = NotusStyle.fromAttribute(NotusAttribute.ul.unset);
       root.insert(0, 'Hello world', null);
       root.retain(11, 1, unsetBlock);
       expect(root.childCount, 1);
@@ -239,7 +239,7 @@ void main() {
       expect(line, hasLength(18));
       final lineDelta = Delta()
         ..insert('Hello ')
-        ..insert('worl', boldStyle.toJson())
+        ..insert('worl', boldStyle.toMap())
         ..insert(' cd ef!\n');
       expect(line.toDelta(), lineDelta);
     });
@@ -251,7 +251,7 @@ void main() {
       expect(root.childCount, 1);
       LineNode line = root.first;
       expect(line.childCount, 1);
-      final delta = Delta()..insert('delnes')..insert('\n', h2Style.toJson());
+      final delta = Delta()..insert('delnes')..insert('\n', h2Style.toMap());
       expect(line.toDelta(), delta);
     });
 

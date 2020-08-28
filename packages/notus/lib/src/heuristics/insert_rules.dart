@@ -93,7 +93,7 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
       Map<String, dynamic> resetStyle;
       if (target.attributes != null &&
           target.attributes.containsKey(NotusAttribute.heading.key)) {
-        resetStyle = NotusAttribute.heading.unset.toJson();
+        resetStyle = NotusAttribute.heading.unset.toMap();
       }
       return Delta()
         ..retain(index)
@@ -232,7 +232,7 @@ class AutoFormatLinksRule extends InsertRule {
       if (attributes.containsKey(NotusAttribute.link.key)) return null;
 
       attributes
-          .addAll(NotusAttribute.link.fromString(link.toString()).toJson());
+          .addAll(NotusAttribute.link.fromString(link.toString()).toMap());
       return Delta()
         ..retain(index - candidate.length)
         ..retain(candidate.length, attributes)
@@ -316,7 +316,7 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
     Map<String, dynamic> blockStyle;
     if (lineStyleKey != null) {
       if (lineStyleKey == NotusAttribute.heading.key) {
-        resetStyle = NotusAttribute.heading.unset.toJson();
+        resetStyle = NotusAttribute.heading.unset.toMap();
       } else if (context.attributes.contains(lineStyleKey)) {
         blockStyle = <String, dynamic>{
           lineStyleKey: lineAttributes[lineStyleKey]

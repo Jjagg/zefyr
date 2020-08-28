@@ -98,7 +98,7 @@ class ZefyrViewState extends State<ZefyrView> {
     }
 
     final BlockNode block = node;
-    final blockStyle = block.style.lineStyle();
+    final blockStyle = block.style.lineStyle;
     if (blockStyle == NotusAttribute.code) {
       return ZefyrCode(node: block);
     } else if (blockStyle == NotusAttribute.ul) {

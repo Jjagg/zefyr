@@ -21,7 +21,7 @@ class CatchAllInsertObjectRule extends InsertObjectRule {
       NotusStyle style, NotusDocumentContext context) {
     return Delta()
       ..retain(index)
-      ..insertObject(type.key, value, style?.toJson());
+      ..insertObject(type.key, value, style?.toMap());
   }
 }
 
@@ -45,7 +45,7 @@ class InsertLinePlacedObjectRule extends InsertObjectRule {
     final isNewlineAfter = target.startsWith('\n');
     final isOnEmptyLine = isNewlineBefore && isNewlineAfter;
     if (isOnEmptyLine) {
-      return result..insertObject(type.key, value, style?.toJson());
+      return result..insertObject(type.key, value, style?.toMap());
     }
     // We are on a non-empty line, split it (preserving style if needed)
     // and insert our embed.
@@ -53,7 +53,7 @@ class InsertLinePlacedObjectRule extends InsertObjectRule {
     if (!isNewlineBefore) {
       result..insert('\n', lineStyle);
     }
-    result..insertObject(type.key, value, style?.toJson());
+    result..insertObject(type.key, value, style?.toMap());
     if (!isNewlineAfter) {
       result..insert('\n');
     }

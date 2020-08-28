@@ -15,7 +15,7 @@ void main() {
       var delta = Delta()
         ..insert(
           'Website',
-          NotusAttribute.link.fromString('https://github.com').toJson(),
+          NotusAttribute.link.fromString('https://github.com').toMap(),
         )
         ..insert('\n');
       var doc = NotusDocument.fromDelta(delta);

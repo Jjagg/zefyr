@@ -85,7 +85,7 @@ void main() {
       expect(notified, isTrue);
       expect(
         controller.document.copyDelta(),
-        Delta()..insert('Words', NotusAttribute.bold.toJson())..insert('\n'),
+        Delta()..insert('Words', NotusAttribute.bold.toMap())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);
     });
@@ -108,7 +108,7 @@ void main() {
         controller.document.copyDelta(),
         Delta()
           ..insert('Won')
-          ..insert('B', NotusAttribute.bold.toJson())
+          ..insert('B', NotusAttribute.bold.toMap())
           ..insert('rds')
           ..insert('\n'),
       );
@@ -131,7 +131,7 @@ void main() {
         controller.document.copyDelta(),
         Delta()
           ..insert('W')
-          ..insert('B', NotusAttribute.bold.toJson())
+          ..insert('B', NotusAttribute.bold.toMap())
           ..insert('uords')
           ..insert('\n'),
       );
@@ -149,7 +149,7 @@ void main() {
       expect(notified, isTrue);
       expect(
         controller.document.copyDelta(),
-        Delta()..insert('Words', NotusAttribute.bold.toJson())..insert('\n'),
+        Delta()..insert('Words', NotusAttribute.bold.toMap())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);
     });
@@ -182,7 +182,7 @@ void main() {
       expect(notified, isTrue);
       expect(
         controller.document.copyDelta(),
-        Delta()..insert('Word', NotusAttribute.bold.toJson())..insert('\n'),
+        Delta()..insert('Word', NotusAttribute.bold.toMap())..insert('\n'),
       );
       expect(controller.lastChangeSource, ChangeSource.local);
     });

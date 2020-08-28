@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:notus/notus.dart';
 
-final ul = NotusAttribute.ul.toJson();
-final bold = NotusAttribute.bold.toJson();
+final ul = NotusAttribute.ul.toMap();
+final bold = NotusAttribute.bold.toMap();
 
 void main() {
   group('$CatchAllInsertRule', () {
@@ -52,13 +52,13 @@ void main() {
     test('applies when line-break is inserted at the end of line', () {
       final doc = Delta()
         ..insert('Hello world')
-        ..insert('\n', NotusAttribute.h1.toJson());
+        ..insert('\n', NotusAttribute.h1.toMap());
       final actual = rule.apply(doc, 11, '\n', NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final expected = Delta()
         ..retain(11)
-        ..insert('\n', NotusAttribute.h1.toJson())
-        ..retain(1, NotusAttribute.heading.unset.toJson());
+        ..insert('\n', NotusAttribute.h1.toMap())
+        ..retain(1, NotusAttribute.heading.unset.toMap());
       expect(actual, expected);
     });
 
@@ -73,38 +73,38 @@ void main() {
     });
 
     test('applies at the beginning of a document', () {
-      final doc = Delta()..insert('\n', NotusAttribute.h1.toJson());
+      final doc = Delta()..insert('\n', NotusAttribute.h1.toMap());
       final actual = rule.apply(doc, 0, '\n', NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final expected = Delta()
-        ..insert('\n', NotusAttribute.h1.toJson())
-        ..retain(1, NotusAttribute.heading.unset.toJson());
+        ..insert('\n', NotusAttribute.h1.toMap())
+        ..retain(1, NotusAttribute.heading.unset.toMap());
       expect(actual, expected);
     });
 
     test('applies and keeps block style', () {
-      final style = NotusAttribute.ul.toJson();
-      style.addAll(NotusAttribute.h1.toJson());
+      final style = NotusAttribute.ul.toMap();
+      style.addAll(NotusAttribute.h1.toMap());
       final doc = Delta()..insert('Hello world')..insert('\n', style);
       final actual = rule.apply(doc, 11, '\n', NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final expected = Delta()
         ..retain(11)
         ..insert('\n', style)
-        ..retain(1, NotusAttribute.heading.unset.toJson());
+        ..retain(1, NotusAttribute.heading.unset.toMap());
       expect(actual, expected);
     });
 
     test('applies to a line in the middle of a document', () {
       final doc = Delta()
         ..insert('Hello \nworld!\nMore lines here.')
-        ..insert('\n', NotusAttribute.h2.toJson());
+        ..insert('\n', NotusAttribute.h2.toMap());
       final actual = rule.apply(doc, 30, '\n', NotusDocumentContext.fallback);
       expect(actual, isNotNull);
       final expected = Delta()
         ..retain(30)
-        ..insert('\n', NotusAttribute.h2.toJson())
-        ..retain(1, NotusAttribute.heading.unset.toJson());
+        ..insert('\n', NotusAttribute.h2.toMap())
+        ..retain(1, NotusAttribute.heading.unset.toMap());
       expect(actual, expected);
     });
   });
@@ -113,7 +113,7 @@ void main() {
     final rule = AutoExitBlockRule();
 
     test('applies when line-break is inserted on empty line in a block', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()
         ..insert('Item 1')
         ..insert('\n', ul)
@@ -123,28 +123,28 @@ void main() {
       expect(actual, isNotNull);
       final expected = Delta()
         ..retain(14)
-        ..retain(1, NotusAttribute.ul.unset.toJson());
+        ..retain(1, NotusAttribute.ul.unset.toMap());
       expect(actual, expected);
     });
 
     test('applies only on empty line', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()..insert('Item 1')..insert('\n', ul);
       final actual = rule.apply(doc, 6, '\n', NotusDocumentContext.fallback);
       expect(actual, isNull);
     });
 
     test('applies at the beginning of a document', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()..insert('\n', ul);
       final actual = rule.apply(doc, 0, '\n', NotusDocumentContext.fallback);
       expect(actual, isNotNull);
-      final expected = Delta()..retain(1, NotusAttribute.ul.unset.toJson());
+      final expected = Delta()..retain(1, NotusAttribute.ul.unset.toMap());
       expect(actual, expected);
     });
 
     test('ignores non-empty line at the beginning of a document', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()..insert('Text\n', ul);
       final actual = rule.apply(doc, 0, '\n', NotusDocumentContext.fallback);
       expect(actual, isNull);
@@ -174,7 +174,7 @@ void main() {
 
   group('$AutoFormatLinksRule', () {
     final rule = AutoFormatLinksRule();
-    final link = NotusAttribute.link.fromString('https://example.com').toJson();
+    final link = NotusAttribute.link.fromString('https://example.com').toMap();
 
     test('apply simple', () {
       final doc = Delta()..insert('Doc with link https://example.com');

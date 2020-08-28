@@ -15,7 +15,7 @@ void main() {
       await editor.tapButtonWithIcon(Icons.code);
 
       BlockNode block = editor.document.root.children.first;
-      expect(block.style.lineStyle(), NotusAttribute.code);
+      expect(block.style.lineStyle, NotusAttribute.code);
     });
   });
 }

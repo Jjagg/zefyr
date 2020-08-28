@@ -130,7 +130,7 @@ class ZefyrController extends ChangeNotifier {
         // Apply it.
         final retainDelta = Delta()
           ..retain(index)
-          ..retain(text.length, toggledStyles.toJson());
+          ..retain(text.length, toggledStyles.toMap());
         document.compose(retainDelta, ChangeSource.local);
       }
     }
@@ -185,7 +185,7 @@ class ZefyrController extends ChangeNotifier {
   }
 
   void formatText(int index, int length, NotusAttribute attribute) {
-    final change = document.format(index, length, attribute);
+    document.format(index, length, attribute);
     _lastChangeSource = ChangeSource.local;
 
     if (length == 0 &&
@@ -195,16 +195,6 @@ class ZefyrController extends ChangeNotifier {
       _toggledStyles = toggledStyles.put(attribute);
     }
 
-    // Transform selection against the composed change and give priority to
-    // the change. This is needed in cases when format operation actually
-    // inserts data into the document (e.g. embeds).
-    final base = change.transformPosition(_selection.baseOffset);
-    final extent = change.transformPosition(_selection.extentOffset);
-    final adjustedSelection =
-        _selection.copyWith(baseOffset: base, extentOffset: extent);
-    if (_selection != adjustedSelection) {
-      _updateSelectionSilent(adjustedSelection, source: _lastChangeSource);
-    }
     notifyListeners();
   }
 

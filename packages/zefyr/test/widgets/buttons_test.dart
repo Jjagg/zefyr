@@ -21,7 +21,7 @@ void main() {
       LineNode line = editor.document.root.children.first;
       expect(line.childCount, 3);
       TextNode bold = line.children.elementAt(1);
-      expect(bold.style.toJson(), NotusAttribute.bold.toJson());
+      expect(bold.style.toMap(), NotusAttribute.bold.toMap());
       expect(bold.stringValue, 'House');
 
       await editor.tapButtonWithIcon(Icons.format_bold);
@@ -133,8 +133,8 @@ void main() {
       expect(line.childCount, 3);
       TextNode link = line.children.elementAt(1);
       expect(link.stringValue, 'House');
-      expect(link.style.toJson(),
-          NotusAttribute.link.fromString('https://github.com').toJson());
+      expect(link.style.toMap(),
+          NotusAttribute.link.fromString('https://github.com').toMap());
 
       // unlink
       await editor.updateSelection(base: 7, extent: 7);

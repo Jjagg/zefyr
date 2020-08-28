@@ -65,14 +65,14 @@ class _NotusMarkdownEncoder extends Converter<Delta, String> {
     }
 
     void _handleSpan(String text, Map<String, dynamic> attributes) {
-      final style = NotusStyle.fromJson(attributes, context.attributes);
+      final style = NotusStyle.fromRawAttributes(attributes, context.attributes);
       currentInlineStyle =
           _writeInline(lineBuffer, text, style, currentInlineStyle);
     }
 
     void _handleLine(Map<String, dynamic> attributes) {
-      final style = NotusStyle.fromJson(attributes, context.attributes);
-      final lineBlock = style.lineStyle();
+      final style = NotusStyle.fromRawAttributes(attributes, context.attributes);
+      final lineBlock = style.lineStyle;
       if (lineBlock == currentBlockStyle) {
         currentBlockLines.add(_writeLine(lineBuffer.toString(), style));
       } else {

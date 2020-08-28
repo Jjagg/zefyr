@@ -34,7 +34,10 @@ abstract class NotusAttributeBase<T> implements NotusAttributeKey {
   /// Scope of this attribute.
   final NotusAttributeScope scope;
 
+  /// Returns `true` if this is a line-scoped attribute.
   bool get isLineScoped => scope == NotusAttributeScope.line;
+
+  /// Returns `true` if this is an inline-scoped attribute.
   bool get isInlineScoped => scope == NotusAttributeScope.inline;
 
   const NotusAttributeBase(this.key, this.scope);
@@ -133,8 +136,8 @@ class NotusAttribute<T> extends NotusAttributeBase {
   /// Returns `true` if this attribute is an unset attribute.
   bool get isUnset => value == null;
 
-  /// Returns `true` if this is an inline-scoped attribute.
-  bool get isInline => scope == NotusAttributeScope.inline;
+  /// Returns `true` if this attribute is not an unset attribute.
+  bool get isSet => !isUnset;
 
   @override
   bool operator ==(Object other) {
@@ -152,7 +155,8 @@ class NotusAttribute<T> extends NotusAttributeBase {
   @override
   String toString() => '$key: $value';
 
-  Map<String, dynamic> toJson() => <String, dynamic>{key: value};
+  /// Returns map with key-value mapping of this attribute.
+  Map<String, dynamic> toMap() => <String, dynamic>{key: value};
 }
 
 class NotusAttributeRegistry {
@@ -199,13 +203,15 @@ class NotusAttributeRegistry {
 
 /// Collection of style attributes.
 class NotusStyle {
-  NotusStyle._(this._data);
+  NotusStyle._(this._attributes);
 
-  final Map<String, NotusAttribute> _data;
+  final Map<String, NotusAttribute> _attributes;
 
-  static NotusStyle fromJson(
+  NotusStyle() : _attributes = {};
+
+  factory NotusStyle.fromRawAttributes(
       Map<String, dynamic> data, NotusAttributeRegistry registry) {
-    if (data == null) return NotusStyle();
+    if (data == null || data.isEmpty) return NotusStyle();
 
     final result = data.map((String key, dynamic value) {
       var attr = registry._fromKeyValue(key, value);
@@ -214,20 +220,28 @@ class NotusStyle {
     return NotusStyle._(result);
   }
 
-  NotusStyle() : _data = <String, NotusAttribute>{};
+  factory NotusStyle.fromAttribute(NotusAttribute attribute) =>
+      NotusStyle._({attribute.key: attribute});
+
+  factory NotusStyle.fromAttributes(Iterable<NotusAttribute> attributes) =>
+      NotusStyle._({for (final a in attributes) a.key: a});
+
+  /// Get an [UnmodifiableMapView] with the attributes applied to this style.
+  Map<String, dynamic> get attributes => UnmodifiableMapView(_attributes);
 
   /// Returns `true` if this attribute set is empty.
-  bool get isEmpty => _data.isEmpty;
+  bool get isEmpty => _attributes.isEmpty;
 
   /// Returns `true` if this attribute set is note empty.
-  bool get isNotEmpty => _data.isNotEmpty;
+  bool get isNotEmpty => _attributes.isNotEmpty;
 
   /// Returns `true` if this style is not empty and contains only inline-scoped
   /// attributes.
-  bool get isInline => isNotEmpty && values.every((item) => item.isInline);
+  bool get isInline =>
+      isNotEmpty && values.every((item) => item.isInlineScoped);
 
   /// Checks that this style has only one attribute, and returns that attribute.
-  NotusAttribute get single => _data.values.single;
+  NotusAttribute get single => _attributes.values.single;
 
   /// Returns `true` if attribute with [key] is present in this set.
   ///
@@ -236,7 +250,7 @@ class NotusStyle {
   ///
   /// To test if this set contains an attribute with specific value consider
   /// using [containsSame].
-  bool contains(NotusAttributeKey key) => _data.containsKey(key.key);
+  bool contains(NotusAttributeKey key) => _attributes.containsKey(key.key);
 
   /// Returns `true` if this set contains attribute with the same value as
   /// [attribute].
@@ -245,14 +259,15 @@ class NotusStyle {
     return get<dynamic>(attribute) == attribute;
   }
 
-  bool hasLineStyle() => _data.values.any((a) => a.isLineScoped);
+  bool hasLineStyle() => _attributes.values.any((a) => a.isLineScoped);
 
-  NotusAttribute lineStyle() =>
-      _data.values.firstWhere((a) => a.isLineScoped, orElse: () => null);
+  NotusAttribute get lineStyle =>
+      _attributes.values.firstWhere((a) => a.isLineScoped, orElse: () => null);
 
-  void unsetLineStyle() {
-    final ls = lineStyle();
-    if (ls != null) put(ls.unset);
+  NotusStyle unsetLineStyle() {
+    final ls = lineStyle;
+    if (ls != null) return merge(ls.unset);
+    return this;
   }
 
   /// Returns value of specified attribute [key] in this set.
@@ -260,19 +275,19 @@ class NotusStyle {
 
   /// Returns [NotusAttribute] from this set by specified [key] or null if [key] is not set.
   NotusAttribute<T> get<T>(NotusAttributeKey key) =>
-      _data[key.key] as NotusAttribute<T>;
+      _attributes[key.key] as NotusAttribute<T>;
 
   /// Returns collection of all attribute keys in this set.
-  Iterable<String> get keys => _data.keys;
+  Iterable<String> get keys => _attributes.keys;
 
   /// Returns collection of all attributes in this set.
-  Iterable<NotusAttribute> get values => _data.values;
+  Iterable<NotusAttribute> get values => _attributes.values;
 
   /// Puts [attribute] into this attribute set and returns result as a new set.
   NotusStyle put(NotusAttribute attribute) {
-    final result = Map<String, NotusAttribute>.from(_data);
+    final result = Map<String, NotusAttribute>.from(_attributes);
 
-    if (attribute.isLineScoped) {
+    if (attribute.isLineScoped && attribute.isSet) {
       result.removeWhere((key, value) => value.isLineScoped);
     }
 
@@ -289,38 +304,51 @@ class NotusStyle {
   /// See also [put] method which does not perform compaction and allows
   /// constructing styles with "unset" values.
   NotusStyle merge(NotusAttribute attribute) {
-    final merged = Map<String, NotusAttribute>.from(_data);
-    if (attribute.isUnset) {
-      merged.remove(attribute.key);
-    } else {
-      merged[attribute.key] = attribute;
-    }
+    final merged = Map<String, NotusAttribute>.from(_attributes);
+    _mergeRaw(merged, attribute);
     return NotusStyle._(merged);
   }
 
   /// Merges all attributes from [other] into this style and returns result
   /// as a new instance of [NotusStyle].
   NotusStyle mergeAll(NotusStyle other) {
-    var result = NotusStyle._(_data);
+    final merged = Map<String, NotusAttribute>.from(_attributes);
     for (var value in other.values) {
-      result = result.merge(value);
+      _mergeRaw(merged, value);
     }
-    return result;
+    return NotusStyle._(merged);
+  }
+
+  static void _mergeRaw(
+      Map<String, NotusAttribute> map, NotusAttribute attribute) {
+    if (attribute.isUnset) {
+      map.remove(attribute.key);
+    } else {
+      if (attribute.isLineScoped) {
+        map.removeWhere((key, value) => value.isLineScoped);
+      }
+
+      map[attribute.key] = attribute;
+    }
   }
 
   /// Removes [attributes] from this style and returns new instance of
   /// [NotusStyle] containing result.
   NotusStyle removeAll(Iterable<NotusAttribute> attributes) {
-    final merged = Map<String, NotusAttribute>.from(_data);
+    final merged = Map<String, NotusAttribute>.from(_attributes);
     attributes.map((item) => item.key).forEach(merged.remove);
     return NotusStyle._(merged);
   }
 
-  /// Returns JSON-serializable representation of this style.
-  Map<String, dynamic> toJson() => _data.isEmpty
+  // TODO toMap for NotusStyle is abused
+  // It's used to create deltas:
+  // e.g. Delta()..insert(_value, style.toMap());
+  // The Op ctor copies the map, which is wasteful.
+
+  /// Returns key-value map of attributes in this style.
+  Map<String, dynamic> toMap() => _attributes.isEmpty
       ? null
-      : _data.map<String, dynamic>((String _, NotusAttribute value) =>
-          MapEntry<String, dynamic>(value.key, value.value));
+      : _attributes.map((key, attr) => MapEntry(key, attr.value));
 
   @override
   bool operator ==(Object other) {
@@ -328,17 +356,18 @@ class NotusStyle {
     if (other is! NotusStyle) return false;
     NotusStyle typedOther = other;
     final eq = const MapEquality<String, NotusAttribute>();
-    return eq.equals(_data, typedOther._data);
+    return eq.equals(_attributes, typedOther._attributes);
   }
 
   @override
   int get hashCode {
-    final hashes = _data.entries.map((entry) => hash2(entry.key, entry.value));
+    final hashes =
+        _attributes.entries.map((entry) => hash2(entry.key, entry.value));
     return hashObjects(hashes);
   }
 
   @override
-  String toString() => "{${_data.values.join(', ')}}";
+  String toString() => "{${_attributes.values.join(', ')}}";
 }
 
 /// Builder for link attribute values.

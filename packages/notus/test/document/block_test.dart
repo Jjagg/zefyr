@@ -54,14 +54,14 @@ void main() {
 
       expect(root.childCount, 1);
       BlockNode block = root.first;
-      expect(block.style.lineStyle(), NotusAttribute.ul);
+      expect(block.style.lineStyle, NotusAttribute.ul);
       expect(block.childCount, 1);
       expect(block.first, const TypeMatcher<LineNode>());
 
       LineNode line = block.first;
       final delta = Delta()
         ..insert('Hello world')
-        ..insert('\n', ulAttrs.toJson());
+        ..insert('\n', ulAttrs.toMap());
       expect(line.toDelta(), delta);
     });
 
@@ -71,7 +71,7 @@ void main() {
 
       expect(root.childCount, 2);
       BlockNode block = root.last;
-      expect(block.style.lineStyle(), NotusAttribute.ul);
+      expect(block.style.lineStyle, NotusAttribute.ul);
       expect(block.childCount, 1);
       expect(block.first, const TypeMatcher<LineNode>());
     });
@@ -83,7 +83,7 @@ void main() {
 
       expect(root.childCount, 1);
       BlockNode block = root.first;
-      expect(block.style.lineStyle(), NotusAttribute.ul);
+      expect(block.style.lineStyle, NotusAttribute.ul);
       expect(block.childCount, 2);
       expect(block.first, const TypeMatcher<LineNode>());
       expect(block.last, const TypeMatcher<LineNode>());
@@ -101,13 +101,13 @@ void main() {
       expect(root.childCount, 3);
       final expected = Delta()
         ..insert('London Grammar Songs')
-        ..insert('\n', NotusAttribute.h1.toJson())
+        ..insert('\n', NotusAttribute.h1.toMap())
         ..insert('Hey now')
-        ..insert('\n', NotusAttribute.ol.toJson())
+        ..insert('\n', NotusAttribute.ol.toMap())
         ..insert('Strong')
-        ..insert('\n', ulAttrs.toJson())
+        ..insert('\n', ulAttrs.toMap())
         ..insert('If You Wait')
-        ..insert('\n', ulAttrs.toJson());
+        ..insert('\n', ulAttrs.toMap());
       expect(root.toDelta(), expected);
     });
 
@@ -123,13 +123,13 @@ void main() {
       expect(root.childCount, 3);
       final expected = Delta()
         ..insert('London Grammar Songs')
-        ..insert('\n', NotusAttribute.h1.toJson())
+        ..insert('\n', NotusAttribute.h1.toMap())
         ..insert('Hey now')
-        ..insert('\n', ulAttrs.toJson())
+        ..insert('\n', ulAttrs.toMap())
         ..insert('Strong')
-        ..insert('\n', ulAttrs.toJson())
+        ..insert('\n', ulAttrs.toMap())
         ..insert('If You Wait')
-        ..insert('\n', NotusAttribute.ol.toJson());
+        ..insert('\n', NotusAttribute.ol.toMap());
       expect(root.toDelta(), expected);
     });
 
@@ -145,13 +145,13 @@ void main() {
       expect(root.childCount, 4);
       final expected = Delta()
         ..insert('London Grammar Songs')
-        ..insert('\n', NotusAttribute.h1.toJson())
+        ..insert('\n', NotusAttribute.h1.toMap())
         ..insert('Hey now')
-        ..insert('\n', ulAttrs.toJson())
+        ..insert('\n', ulAttrs.toMap())
         ..insert('Strong')
-        ..insert('\n', NotusAttribute.ol.toJson())
+        ..insert('\n', NotusAttribute.ol.toMap())
         ..insert('If You Wait')
-        ..insert('\n', ulAttrs.toJson());
+        ..insert('\n', ulAttrs.toMap());
       expect(root.toDelta(), expected);
     });
 

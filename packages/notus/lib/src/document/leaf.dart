@@ -200,7 +200,7 @@ class TextNode extends LeafNode {
 
   @override
   Delta toDelta() {
-    return Delta()..insert(_value, style.toJson());
+    return Delta()..insert(_value, style.toMap());
   }
 
   @override
@@ -265,7 +265,7 @@ class EmbedNode extends LeafNode {
 
   @override
   Delta toDelta() {
-    return Delta()..insertObject(type.key, object, style.toJson());
+    return Delta()..insertObject(type.key, object, style.toMap());
   }
 
   @override

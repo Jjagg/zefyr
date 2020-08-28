@@ -14,7 +14,7 @@ void main() {
       await editor.pumpAndTap();
       await editor.tapButtonWithIcon(Icons.format_list_bulleted);
       BlockNode block = editor.document.root.children.first;
-      expect(block.style.lineStyle(), NotusAttribute.ul);
+      expect(block.style.lineStyle, NotusAttribute.ul);
     });
   });
 }

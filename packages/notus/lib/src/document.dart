@@ -302,7 +302,7 @@ class NotusDocument {
     final before = copyDelta();
     for (final op in change.operations) {
       final attributes = op.attributes != null
-          ? NotusStyle.fromJson(op.attributes, attributeRegistry)
+          ? NotusStyle.fromRawAttributes(op.attributes, attributeRegistry)
           : null;
       if (op is InsertStringOp) {
         _root.insert(offset, op.text, attributes);
@@ -359,7 +359,7 @@ class NotusDocument {
     var offset = 0;
     for (final op in doc.operations) {
       final style = op.attributes != null
-          ? NotusStyle.fromJson(op.attributes, attributeRegistry)
+          ? NotusStyle.fromRawAttributes(op.attributes, attributeRegistry)
           : null;
       if (op is InsertStringOp) {
         _root.insert(offset, op.text, style);

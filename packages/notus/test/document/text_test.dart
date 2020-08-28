@@ -6,7 +6,7 @@ import 'package:quill_delta/quill_delta.dart';
 import 'package:notus/notus.dart';
 
 final boldStyle = NotusStyle().merge(NotusAttribute.bold);
-final boldUnsetStyle = NotusStyle().put(NotusAttribute.bold.unset);
+final boldUnsetStyle = NotusStyle.fromAttribute(NotusAttribute.bold.unset);
 final italicStyle = NotusStyle().merge(NotusAttribute.italic);
 
 void main() {
@@ -95,7 +95,7 @@ void main() {
       expect(line.childCount, 2);
       line.insert(3, 'don', null);
       expect(line.childCount, 4);
-      final b = boldStyle.toJson();
+      final b = boldStyle.toMap();
       expect(
         line.children.elementAt(0).toDelta(),
         Delta()..insert('Lon', b),

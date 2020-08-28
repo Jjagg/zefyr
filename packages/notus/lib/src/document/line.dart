@@ -21,7 +21,6 @@ import 'embed.dart';
 class LineNode extends ContainerNode<LeafNode>
     with StyledNodeMixin
     implements StyledNode {
-
   /// Returns `true` if this line contains an [EmbedNode] with placement
   /// [EmbedPlacement.line].
   bool get hasLineEmbed => children.any((child) =>
@@ -168,7 +167,7 @@ class LineNode extends ContainerNode<LeafNode>
       BlockNode block = parent;
       attributes = attributes.mergeAll(block.style);
     }
-    delta.insert('\n', attributes.toJson());
+    delta.insert('\n', attributes.toMap());
     return delta;
   }
 
@@ -309,7 +308,7 @@ class LineNode extends ContainerNode<LeafNode>
     if (newStyle == null || newStyle.isEmpty) return;
 
     applyStyle(newStyle);
-    final lineStyle = newStyle.lineStyle();
+    final lineStyle = newStyle.lineStyle;
     // TODO This logic should be the same for all line formatting
     // Formatting rules should determine if a block is created instead
     // of making an exception for heading here
@@ -318,7 +317,7 @@ class LineNode extends ContainerNode<LeafNode>
     } // no block-level changes
 
     if (parent is BlockNode) {
-      final parentStyle = (parent as BlockNode).style.lineStyle();
+      final parentStyle = (parent as BlockNode).style.lineStyle;
       if (lineStyle.isUnset) {
         if (lineStyle.key == parentStyle.key) unwrap();
       } else if (lineStyle != parentStyle) {

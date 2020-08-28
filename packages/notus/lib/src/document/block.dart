@@ -61,7 +61,7 @@ class BlockNode extends ContainerNode<LineNode>
 
   @override
   String toString() {
-    final block = style.lineStyle();
+    final block = style.lineStyle;
     final buffer = StringBuffer('§ {$block}\n');
     for (var child in children) {
       final tree = child.isLast ? '└' : '├';

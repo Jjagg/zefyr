@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 import 'package:quill_delta/quill_delta.dart';
 import 'package:notus/notus.dart';
 
-final ul = NotusAttribute.ul.toJson();
-final bold = NotusAttribute.bold.toJson();
+final ul = NotusAttribute.ul.toMap();
+final bold = NotusAttribute.bold.toMap();
 
 void main() {
   group('$ResolveLineFormatRule', () {
@@ -18,7 +18,7 @@ void main() {
       final actual = rule.apply(
           doc, 0, 20, NotusAttribute.ul, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final expected = Delta()
         ..retain(7)
         ..retain(1, ul)
@@ -36,13 +36,13 @@ void main() {
       final actual = rule.apply(
           doc, 0, 0, NotusAttribute.ul, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final expected = Delta()..retain(7)..retain(1, ul);
       expect(actual, expected);
     });
 
     test('apply with zero length in the middle of a line', () {
-      final ul = NotusAttribute.ul.toJson();
+      final ul = NotusAttribute.ul.toMap();
       final doc = Delta()
         ..insert('Title\nOne')
         ..insert('\n', ul)
@@ -65,7 +65,7 @@ void main() {
       final actual = rule.apply(
           doc, 0, 20, NotusAttribute.bold, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
-      final b = NotusAttribute.bold.toJson();
+      final b = NotusAttribute.bold.toMap();
       final expected = Delta()
         ..retain(7, b)
         ..retain(1)
@@ -88,13 +88,13 @@ void main() {
           NotusAttribute.link.fromString('https://github.com/memspace/zefyr');
       final doc = Delta()
         ..insert('Visit our ')
-        ..insert('website', link.toJson())
+        ..insert('website', link.toMap())
         ..insert(' for more details.\n');
 
       final actual =
           rule.apply(doc, 13, 0, newLink, NotusDocumentContext.fallback);
       expect(actual, isNotNull);
-      final expected = Delta()..retain(10)..retain(7, newLink.toJson());
+      final expected = Delta()..retain(10)..retain(7, newLink.toMap());
       expect(actual, expected);
     });
   });
