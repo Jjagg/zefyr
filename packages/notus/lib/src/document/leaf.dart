@@ -133,10 +133,11 @@ abstract class LeafNode extends Node
     assert(index >= 0 && (index <= length), 'Index: $index, Length: $length.');
     assert(type != null);
 
-    if (type.placement == EmbedPlacement.line) {
-      throw ArgumentError(
-          'Line-placed embeds cannot be inserted into leaf nodes.');
-    }
+    // FIXME Object is inserted before the newline that comes after it so we can't validate here
+    //if (type.placement == EmbedPlacement.line) {
+    //  throw ArgumentError(
+    //      'Line-placed embeds cannot be inserted into leaf nodes.');
+    //}
 
     final node = LeafNode.embed(type, value);
     if (index == length) {

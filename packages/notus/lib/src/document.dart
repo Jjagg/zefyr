@@ -245,16 +245,11 @@ class NotusDocument {
           attribute, 'attribute', 'Attribute may not be null.');
     }
 
-    var change = Delta();
-
     final formatChange =
         heuristics.applyFormatRules(this, index, length, attribute, context);
-    if (formatChange.isNotEmpty) {
-      compose(formatChange, ChangeSource.local);
-      change = change.compose(formatChange);
-    }
+    if (formatChange.isNotEmpty) compose(formatChange, ChangeSource.local);
 
-    return change;
+    return formatChange;
   }
 
   /// Returns style of specified text range.
@@ -311,7 +306,7 @@ class NotusDocument {
         _root.insertObject(offset, embedType, op.value, attributes);
       } else if (op.isDelete) {
         _root.delete(offset, op.length);
-      } else if (op.attributes != null) {
+      } else if (op.hasAttributes) {
         _root.retain(offset, op.length, attributes);
       }
       if (!op.isDelete) offset += op.length;

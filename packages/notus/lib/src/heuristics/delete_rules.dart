@@ -12,7 +12,8 @@ abstract class DeleteRule {
 
   /// Applies heuristic rule to a delete operation on a [document] and returns
   /// resulting [Delta].
-  Delta apply(Delta document, int index, int length, NotusDocumentContext context);
+  Delta apply(
+      Delta document, int index, int length, NotusDocumentContext context);
 }
 
 /// Fallback rule for delete operations which simply deletes specified text
@@ -21,7 +22,8 @@ class CatchAllDeleteRule extends DeleteRule {
   const CatchAllDeleteRule();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
+  Delta apply(
+      Delta document, int index, int length, NotusDocumentContext context) {
     return Delta()
       ..retain(index)
       ..delete(length);
@@ -38,7 +40,8 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
   const PreserveLineStyleOnMergeRule();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
+  Delta apply(
+      Delta document, int index, int length, NotusDocumentContext context) {
     final iter = DeltaIterator(document);
     iter.skip(index);
     final target = iter.next(1);
@@ -81,7 +84,8 @@ class EnsureEmbedLineRule extends DeleteRule {
   const EnsureEmbedLineRule();
 
   @override
-  Delta apply(Delta document, int index, int length, NotusDocumentContext context) {
+  Delta apply(
+      Delta document, int index, int length, NotusDocumentContext context) {
     final iter = DeltaIterator(document);
 
     // First, check if line-break deleted after an embed.
@@ -91,7 +95,7 @@ class EnsureEmbedLineRule extends DeleteRule {
     var remaining = length;
     var foundEmbed = false;
     var hasLineBreakBefore = false;
-    if (op != null && op.endsWith(kZeroWidthSpace)) {
+    if (op != null && op is InsertObjectOp) {
       foundEmbed = true;
       var candidate = iter.next(1);
       remaining--;
@@ -118,7 +122,7 @@ class EnsureEmbedLineRule extends DeleteRule {
       final candidate = iter.next(1);
       // If there is a line-break before deleted range we allow the operation
       // since it results in a correctly formatted line with single embed in it.
-      if (candidate.isString(kZeroWidthSpace) && !hasLineBreakBefore) {
+      if (candidate is InsertObjectOp && !hasLineBreakBefore) {
         foundEmbed = true;
         lengthDelta -= 1;
       }

@@ -41,17 +41,17 @@ void main() {
       expect(actual, expected);
     });
 
-    test('apply with zero length in the middle of a line', () {
+    test('override existing line-scoped attribute', () {
       final ul = NotusAttribute.ul.toMap();
-      final doc = Delta()
-        ..insert('Title\nOne')
-        ..insert('\n', ul)
-        ..insert('Two')
-        ..insert('\n', ul)
-        ..insert('Three!\n');
+      final doc = Delta()..insert('Title')..insert('\n', ul);
       final actual = rule.apply(
-          doc, 7, 0, NotusAttribute.ul, NotusDocumentContext.fallback);
-      final expected = Delta()..retain(9)..retain(1, ul);
+          doc, 0, 0, NotusAttribute.bq, NotusDocumentContext.fallback);
+      final expected = Delta()
+        ..retain(5)
+        ..retain(
+            1,
+            NotusStyle.fromAttributes(
+                [NotusAttribute.ul.unset, NotusAttribute.bq]).toMap());
       expect(actual, expected);
     });
   });

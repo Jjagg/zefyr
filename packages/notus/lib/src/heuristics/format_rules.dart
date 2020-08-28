@@ -30,14 +30,15 @@ class ResolveLineFormatRule extends FormatRule {
     final iter = DeltaIterator(document);
     iter.skip(index);
 
+    final attrMap = attribute.toMap();
+
     // Apply line styles to all line-break characters within range of this
     // retain operation.
     var current = 0;
     while (current < length && iter.hasNext) {
       final op = iter.next(length - current);
-      final text = op.match(insert: (op) => op.text);
-      if (text != null) {
-        final delta = _applyAttribute(text, attribute);
+      if (op is InsertStringOp) {
+        final delta = _applyAttribute(op.text, attrMap);
         result.concat(delta);
       } else {
         result.retain(op.length);
@@ -52,18 +53,28 @@ class ResolveLineFormatRule extends FormatRule {
         result..retain(op.length);
         continue;
       }
-      result..retain(lf)..retain(1, attribute.toMap());
+
+      // Unset any other line scoped attributes over the range.
+      final unsetMap = op.attributes == null
+          ? <String, dynamic>{}
+          : Map<String, dynamic>.fromEntries(op.attributes.entries
+              .where((e) =>
+                  context.attributes.isLineScoped(e.key) && e.value != null)
+              .map((e) => MapEntry(e.key, null)));
+      unsetMap[attribute.key] = attribute.value;
+
+      result..retain(lf)..retain(1, unsetMap);
       break;
     }
     return result;
   }
 
-  Delta _applyAttribute(String text, NotusAttribute attribute) {
+  Delta _applyAttribute(String text, Map<String, dynamic> attrMap) {
     final result = Delta();
     var offset = 0;
     var lf = text.indexOf('\n');
     while (lf >= 0) {
-      result..retain(lf - offset)..retain(1, attribute.toMap());
+      result..retain(lf - offset)..retain(1, attrMap);
       offset = lf + 1;
       lf = text.indexOf('\n', offset);
     }

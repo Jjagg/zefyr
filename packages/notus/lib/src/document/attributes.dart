@@ -227,7 +227,7 @@ class NotusStyle {
       NotusStyle._({for (final a in attributes) a.key: a});
 
   /// Get an [UnmodifiableMapView] with the attributes applied to this style.
-  Map<String, dynamic> get attributes => UnmodifiableMapView(_attributes);
+  Map<String, NotusAttribute> get attributes => UnmodifiableMapView(_attributes);
 
   /// Returns `true` if this attribute set is empty.
   bool get isEmpty => _attributes.isEmpty;
@@ -261,8 +261,8 @@ class NotusStyle {
 
   bool hasLineStyle() => _attributes.values.any((a) => a.isLineScoped);
 
-  NotusAttribute get lineStyle =>
-      _attributes.values.firstWhere((a) => a.isLineScoped, orElse: () => null);
+  NotusAttribute get lineStyle => _attributes.values
+      .firstWhere((a) => a.isLineScoped && a.value != null, orElse: () => null);
 
   NotusStyle unsetLineStyle() {
     final ls = lineStyle;

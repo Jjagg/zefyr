@@ -223,9 +223,10 @@ class LineNode extends ContainerNode<LeafNode>
       return;
     }
 
-    if (type.placement == EmbedPlacement.line) {
-      throw StateError('Cannot insert non-inline embed in non-empty LineNode.');
-    }
+    // FIXME Object is inserted before the newline that comes after it so we can't validate here
+    //if (type.placement == EmbedPlacement.line) {
+    //  throw StateError('Cannot insert non-inline embed in non-empty LineNode.');
+    //}
 
     final result = lookup(index, inclusive: true);
     result.node.insertObject(result.offset, type, value, style);
@@ -308,29 +309,39 @@ class LineNode extends ContainerNode<LeafNode>
     if (newStyle == null || newStyle.isEmpty) return;
 
     applyStyle(newStyle);
-    final lineStyle = newStyle.lineStyle;
+
+    if (!newStyle.hasLineStyle()) return;
+
+    var newLineStyle = newStyle.lineStyle;
+    var oldLineStyle = newStyle.attributes.values.firstWhere(
+        (e) => e.isLineScoped && e.value == null,
+        orElse: () => null);
+
+    var oldStyleIsBlock =
+        oldLineStyle != null && oldLineStyle.key != NotusAttribute.heading.key;
+    var newStyleIsBlock =
+        newLineStyle != null && newLineStyle.key != NotusAttribute.heading.key;
+
     // TODO This logic should be the same for all line formatting
     // Formatting rules should determine if a block is created instead
     // of making an exception for heading here
-    if (lineStyle == null || lineStyle.key == NotusAttribute.heading.key) {
-      return;
-    } // no block-level changes
+
+    if (!oldStyleIsBlock && !newStyleIsBlock) return; // no block-level changes
 
     if (parent is BlockNode) {
       final parentStyle = (parent as BlockNode).style.lineStyle;
-      if (lineStyle.isUnset) {
-        if (lineStyle.key == parentStyle.key) unwrap();
-      } else if (lineStyle != parentStyle) {
+      if (!newStyleIsBlock) {
+        unwrap();
+      } else if (newLineStyle != parentStyle) {
         unwrap();
         final block = BlockNode();
-        block.applyAttribute(lineStyle);
+        block.applyAttribute(newLineStyle);
         wrap(block);
         block.optimize();
       } // else the same style or unset with different style => no-op.
-    } else if (!lineStyle.isUnset) {
-      // Only wrap with a new block if this is not an unset
+    } else if (newStyleIsBlock) {
       final block = BlockNode();
-      block.applyAttribute(lineStyle);
+      block.applyAttribute(newLineStyle);
       wrap(block);
       block.optimize();
     }

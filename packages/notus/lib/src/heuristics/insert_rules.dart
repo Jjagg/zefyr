@@ -307,7 +307,7 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
       }
     }
 
-    final lineStyleKey = lineAttributes == null
+    final lineStyleKey = lineAttributes != null
         ? lineAttributes.keys
             .firstWhere((a) => context.attributes.isLineScoped(a))
         : null;
