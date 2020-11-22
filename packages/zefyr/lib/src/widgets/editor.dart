@@ -2,8 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:zefyr/src/attributes.dart';
 import 'package:zefyr/src/embed.dart';
 
 import 'controller.dart';
@@ -25,6 +27,7 @@ class ZefyrEditor extends StatefulWidget {
     this.mode = ZefyrMode.edit,
     this.padding = const EdgeInsets.symmetric(horizontal: 16.0),
     this.embedMap,
+    this.attributeMap,
     this.toolbarDelegate,
     this.imageDelegate,
     this.selectionControls,
@@ -55,6 +58,9 @@ class ZefyrEditor extends StatefulWidget {
 
   /// Map for supported embeddable objects.
   final ZefyrEmbedRegistry embedMap;
+
+  /// Map for attributes on text with [GestureRecognizer]s.
+  final ZefyrAttributeRegistry attributeMap;
 
   /// Optional delegate for customizing this editor's toolbar.
   final ZefyrToolbarDelegate toolbarDelegate;
@@ -162,6 +168,7 @@ class _ZefyrEditorState extends State<ZefyrEditor> {
       _scope = ZefyrScope.editable(
         mode: widget.mode,
         embedMap: widget.embedMap,
+        attributeMap: widget.attributeMap,
         imageDelegate: _imageDelegate,
         controller: widget.controller,
         focusNode: widget.focusNode,

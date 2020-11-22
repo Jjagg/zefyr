@@ -4,8 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:notus/notus.dart';
-import 'package:zefyr/src/embed.dart';
 
+import '../attributes.dart';
+import '../embed.dart';
 import 'code.dart';
 import 'line.dart';
 import 'image.dart';
@@ -20,11 +21,16 @@ import 'theme.dart';
 class ZefyrView extends StatefulWidget {
   final NotusDocument document;
   final ZefyrEmbedRegistry embedMap;
+  final ZefyrAttributeRegistry attributeMap;
   final ZefyrImageDelegate imageDelegate;
 
-  const ZefyrView(
-      {Key key, @required this.document, this.embedMap, this.imageDelegate})
-      : super(key: key);
+  const ZefyrView({
+    Key key,
+    @required this.document,
+    this.attributeMap,
+    this.embedMap,
+    this.imageDelegate,
+  }) : super(key: key);
 
   @override
   ZefyrViewState createState() => ZefyrViewState();
@@ -40,7 +46,10 @@ class ZefyrViewState extends State<ZefyrView> {
   void initState() {
     super.initState();
     _scope = ZefyrScope.view(
-        embedMap: widget.embedMap, imageDelegate: widget.imageDelegate);
+      attributeMap: widget.attributeMap,
+      embedMap: widget.embedMap,
+      imageDelegate: widget.imageDelegate,
+    );
   }
 
   @override

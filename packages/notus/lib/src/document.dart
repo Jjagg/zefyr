@@ -109,11 +109,14 @@ class NotusDocument {
   Delta get delta => UnmodifiableDeltaView(_delta);
   Delta _delta;
 
+  bool get isEmpty => _delta.isEmpty;
+  bool get isNotEmpty => _delta.isNotEmpty;
+
   /// Returns plain text representation of this document.
   String toPlainText() =>
       _delta.operations.whereType<InsertStringOp>().map((op) => op.text).join();
 
-  dynamic toJson() => _delta.toJson();
+  List toJson() => _delta.toJson();
 
   /// Returns `true` if this document and associated stream of [changes]
   /// is closed.
@@ -348,9 +351,11 @@ class NotusDocument {
   /// Loads [document] delta into this document.
   void _loadDocument(Delta doc) {
     if (doc.isEmpty || !doc.last.endsWith('\n')) {
-      throw ArgumentError.value(doc, 'doc',
-          'Invalid document delta. Document delta must always end with a line-break.');
+      //throw ArgumentError.value(doc, 'doc',
+      //    'Invalid document delta. Document delta must always end with a line-break.');
+      doc.insert('\n');
     }
+
     var offset = 0;
     for (final op in doc.operations) {
       final style = op.attributes != null

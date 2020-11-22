@@ -305,18 +305,33 @@ class _ZefyrButtonListState extends State<ZefyrButtonList> {
     final rightArrow = _showRightArrow
         ? Icon(Icons.arrow_right, size: 18.0, color: color)
         : null;
+
     return Row(
       children: <Widget>[
-        SizedBox(
-          width: 12.0,
-          height: ZefyrToolbar.kToolbarHeight,
-          child: Container(child: leftArrow, color: theme.color),
+        GestureDetector(
+          onTap: () => _controller.animateTo(
+            _controller.position.minScrollExtent,
+            duration: Duration(milliseconds: 200),
+            curve: Curves.decelerate,
+          ),
+          child: SizedBox(
+            width: 12.0,
+            height: ZefyrToolbar.kToolbarHeight,
+            child: Container(child: leftArrow, color: theme.color),
+          ),
         ),
         Expanded(child: ClipRect(child: list)),
-        SizedBox(
-          width: 12.0,
-          height: ZefyrToolbar.kToolbarHeight,
-          child: Container(child: rightArrow, color: theme.color),
+        GestureDetector(
+          onTap: () => _controller.animateTo(
+            _controller.position.maxScrollExtent,
+            duration: Duration(milliseconds: 200),
+            curve: Curves.decelerate,
+          ),
+          child: SizedBox(
+            width: 12.0,
+            height: ZefyrToolbar.kToolbarHeight,
+            child: Container(child: rightArrow, color: theme.color),
+          ),
         ),
       ],
     );

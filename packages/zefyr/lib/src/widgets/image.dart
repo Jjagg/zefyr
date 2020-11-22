@@ -58,7 +58,7 @@ class _ZefyrImageState extends State<ZefyrImage> {
   Widget build(BuildContext context) {
     final theme = ZefyrTheme.of(context);
     final image = widget.delegate.buildImage(context, imageSource);
-    return _EditableImage(
+    return EditableImage(
       child: Padding(
         padding: theme.defaultLineTheme.padding,
         child: image,
@@ -68,8 +68,8 @@ class _ZefyrImageState extends State<ZefyrImage> {
   }
 }
 
-class _EditableImage extends SingleChildRenderObjectWidget {
-  _EditableImage({@required Widget child, @required this.node})
+class EditableImage extends SingleChildRenderObjectWidget {
+  EditableImage({@required Widget child, @required this.node})
       : assert(node != null),
         super(child: child);
 

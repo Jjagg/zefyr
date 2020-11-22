@@ -298,6 +298,8 @@ class _ImageButtonState extends State<ImageButton> {
     if (image != null) {
       editor.replaceSelectionWithObject('image', image, null);
     }
+    final toolbar = ZefyrToolbar.of(context);
+    toolbar.closeOverlay();
   }
 
   void _pickFromGallery() async {
@@ -307,6 +309,8 @@ class _ImageButtonState extends State<ImageButton> {
     if (image != null) {
       editor.replaceSelectionWithObject('image', image, null);
     }
+    final toolbar = ZefyrToolbar.of(context);
+    toolbar.closeOverlay();
   }
 }
 
@@ -430,7 +434,7 @@ class _LinkButtonState extends State<LinkButton> {
     assert(link != null);
     if (await canLaunch(link)) {
       editor.hideKeyboard();
-      await launch(link, forceWebView: true);
+      await launch(link);
     }
   }
 

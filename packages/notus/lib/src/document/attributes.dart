@@ -69,7 +69,7 @@ abstract class NotusAttributeBase<T> implements NotusAttributeKey {
 ///   * [NotusAttribute.italic]
 ///   * [NotusAttribute.link]
 ///   * [NotusAttribute.heading]
-class NotusAttribute<T> extends NotusAttributeBase {
+class NotusAttribute<T> extends NotusAttributeBase<T> {
   // Inline attributes
 
   /// Bold style attribute.
@@ -189,7 +189,10 @@ class NotusAttributeRegistry {
     throw ArgumentError.value(key, 'No attribute with key "$key" registered.');
   }
 
-  static final NotusAttributeRegistry fallback = NotusAttributeRegistry([
+  static final NotusAttributeRegistry fallback =
+      NotusAttributeRegistry(_defaultAttributes);
+
+  static const List<NotusAttributeBase> _defaultAttributes = [
     NotusAttribute.bold,
     NotusAttribute.italic,
     NotusAttribute.link,
@@ -198,7 +201,10 @@ class NotusAttributeRegistry {
     NotusAttribute.ol,
     NotusAttribute.bq,
     NotusAttribute.code
-  ]);
+  ];
+
+  static List<NotusAttributeBase> get defaultAttributes =>
+      List.of(_defaultAttributes);
 }
 
 /// Collection of style attributes.
@@ -227,7 +233,8 @@ class NotusStyle {
       NotusStyle._({for (final a in attributes) a.key: a});
 
   /// Get an [UnmodifiableMapView] with the attributes applied to this style.
-  Map<String, NotusAttribute> get attributes => UnmodifiableMapView(_attributes);
+  Map<String, NotusAttribute> get attributes =>
+      UnmodifiableMapView(_attributes);
 
   /// Returns `true` if this attribute set is empty.
   bool get isEmpty => _attributes.isEmpty;

@@ -177,6 +177,9 @@ class InputConnectionController implements TextInputClient {
     }
   }
 
+  @override
+  void performPrivateCommand(String action, Map<String, dynamic> data) {}
+
   //
   // Private members
   //

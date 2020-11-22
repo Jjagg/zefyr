@@ -126,7 +126,7 @@ class AutoExitBlockRule extends InsertRule {
     final target = iter.next();
     final blockAttributeKey = target.hasAttributes
         ? target.attributes.keys
-            .firstWhere((a) => context.attributes.isLineScoped(a))
+            .firstWhere((a) => context.attributes.isLineScoped(a), orElse: () => null)
         : null;
     if (isEmptyLine(previous, target) && blockAttributeKey != null) {
       // We reset block style even if this line is not the last one in its
@@ -173,7 +173,7 @@ class PreserveInlineStylesRule extends InsertRule {
     // Special handling needed for inserts inside fragments with link attribute.
     // Link style should only be preserved if insert occurs inside the fragment.
     // Link style should NOT be preserved on the boundaries.
-    var noLinkAttributes = previous.attributes;
+    var noLinkAttributes = Map<String, dynamic>.of(previous.attributes);
     noLinkAttributes.remove(NotusAttribute.link.key);
     final noLinkResult = Delta()
       ..retain(index)
@@ -256,10 +256,8 @@ class ForceNewlineForInsertsAroundEmbedRule extends InsertRule {
     final iter = DeltaIterator(document);
     final previous = iter.skip(index);
     final target = iter.next();
-    final beforeEmbed =
-        target?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
-    final afterEmbed =
-        previous?.isString(EmbedNode.kPlainTextPlaceholder) ?? false;
+    final beforeEmbed = target?.isObject() ?? false;
+    final afterEmbed = previous?.isObject() ?? false;
     if (beforeEmbed || afterEmbed) {
       final delta = Delta()..retain(index);
       if (beforeEmbed && !text.endsWith('\n')) {
@@ -309,7 +307,7 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
 
     final lineStyleKey = lineAttributes != null
         ? lineAttributes.keys
-            .firstWhere((a) => context.attributes.isLineScoped(a))
+            .firstWhere((a) => context.attributes.isLineScoped(a), orElse: () => null)
         : null;
 
     Map<String, dynamic> resetStyle;

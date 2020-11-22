@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:notus/notus.dart';
 import 'package:zefyr/src/embed.dart';
+import 'package:zefyr/src/attributes.dart';
 
 import 'controller.dart';
 import 'cursor_timer.dart';
@@ -26,23 +27,28 @@ class ZefyrScope extends ChangeNotifier {
   /// Creates a view-only scope.
   ///
   /// Normally used in [ZefyrView].
-  ZefyrScope.view({ZefyrEmbedRegistry embedMap, ZefyrImageDelegate imageDelegate})
-      : isEditable = false,
+  ZefyrScope.view({
+    ZefyrEmbedRegistry embedMap,
+    ZefyrAttributeRegistry attributeMap,
+    ZefyrImageDelegate imageDelegate,
+  })  : isEditable = false,
         _mode = ZefyrMode.view,
         embedMap = embedMap ?? ZefyrEmbedRegistry.fallback,
+        attributeMap = attributeMap ?? ZefyrAttributeRegistry.fallback,
         _imageDelegate = imageDelegate;
 
   /// Creates editable scope.
   ///
   /// Normally used in [ZefyrEditor].
-  ZefyrScope.editable(
-      {@required ZefyrMode mode,
-      @required ZefyrController controller,
-      @required FocusNode focusNode,
-      @required FocusScopeNode focusScope,
-      ZefyrEmbedRegistry embedMap,
-      ZefyrImageDelegate imageDelegate})
-      : assert(mode != null),
+  ZefyrScope.editable({
+    @required ZefyrMode mode,
+    @required ZefyrController controller,
+    @required FocusNode focusNode,
+    @required FocusScopeNode focusScope,
+    ZefyrEmbedRegistry embedMap,
+    ZefyrAttributeRegistry attributeMap,
+    ZefyrImageDelegate imageDelegate,
+  })  : assert(mode != null),
         assert(controller != null),
         assert(focusNode != null),
         assert(focusScope != null),
@@ -50,6 +56,7 @@ class ZefyrScope extends ChangeNotifier {
         _mode = mode,
         _controller = controller,
         embedMap = embedMap ?? ZefyrEmbedRegistry.fallback,
+        attributeMap = attributeMap ?? ZefyrAttributeRegistry.fallback,
         _imageDelegate = imageDelegate,
         _focusNode = focusNode,
         _focusScope = focusScope,
@@ -68,6 +75,7 @@ class ZefyrScope extends ChangeNotifier {
   }
 
   final ZefyrEmbedRegistry embedMap;
+  final ZefyrAttributeRegistry attributeMap;
 
   ZefyrImageDelegate _imageDelegate;
   ZefyrImageDelegate get imageDelegate => _imageDelegate;

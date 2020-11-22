@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -34,6 +35,13 @@ class ZefyrLine extends StatefulWidget {
 
 class _ZefyrLineState extends State<ZefyrLine> {
   final LayerLink _link = LayerLink();
+  final List<GestureRecognizer> _recognizers = [];
+
+  @override
+  void dispose() {
+    _recognizers.forEach((r) => r.dispose());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +58,7 @@ class _ZefyrLineState extends State<ZefyrLine> {
       assert(widget.style != null);
       content = ZefyrRichText(
         node: widget.node,
-        text: buildText(context),
+        text: buildText(context, scope),
       );
     }
 
@@ -117,21 +125,46 @@ class _ZefyrLineState extends State<ZefyrLine> {
     }
   }
 
-  TextSpan buildText(BuildContext context) {
+  TextSpan buildText(BuildContext context, ZefyrScope scope) {
     final theme = ZefyrTheme.of(context);
     final children = widget.node.children
-        .map((node) => _segmentToTextSpan(node, theme))
+        .map((node) => _segmentToTextSpan(context, scope, node, theme))
         .toList(growable: false);
     return TextSpan(style: widget.style, children: children);
   }
 
-  TextSpan _segmentToTextSpan(Node node, ZefyrThemeData theme) {
+  InlineSpan _segmentToTextSpan(
+    BuildContext context,
+    ZefyrScope scope,
+    Node node,
+    ZefyrThemeData theme,
+  ) {
     final TextNode segment = node;
     final attrs = segment.style;
 
+    final registry = scope.attributeMap;
+
+    final style = _getTextStyle(attrs, theme);
+
+    GestureRecognizer recognizer;
+
+    for (final attr in attrs.attributes.values) {
+      if (attr.isSet) {
+        final gdf = registry.get(attr.key)?.gestureRecognizerFactory;
+        if (gdf != null) {
+          recognizer = gdf(context, scope, attr.value);
+          if (recognizer != null) {
+            _recognizers.add(recognizer);
+            break;
+          }
+        }
+      }
+    }
+
     return TextSpan(
       text: segment.stringValue,
-      style: _getTextStyle(attrs, theme),
+      style: style,
+      recognizer: recognizer,
     );
   }
 
@@ -145,6 +178,10 @@ class _ZefyrLineState extends State<ZefyrLine> {
     }
     if (style.contains(NotusAttribute.link)) {
       result = result.merge(theme.attributeTheme.link);
+    }
+    // TODO proper style management for registered attributes
+    if (style.values.any((v) => v.key == 'tag')) {
+      result = result.merge(TextStyle(color: Colors.green));
     }
     return result;
   }
